@@ -21,6 +21,19 @@ class MusicInfo {
 class AndroidChannel {
   final _androidBackendChannel = MethodChannel("Android_Channel_Music");
 
+  Future<dynamic> pickDirectory() async {
+    try {
+      final dirUri = await _androidBackendChannel.invokeMethod(
+        "pickPreferredDirectory",
+      );
+
+      return dirUri;
+    } on PlatformException catch (e) {
+      log(e.message!);
+      return null;
+    }
+  }
+
   Future<List<dynamic>?> loadMusicFromStorage<T>() async {
     try {
       final allData = await _androidBackendChannel.invokeMethod(

@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:muik/android_channel.dart';
 
@@ -58,11 +56,13 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        elevation: 20,
         title: Text("Now Playing: ${musicInfo.name}"),
         backgroundColor: Colors.green,
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: pauseOrResumeMusic,
+
         child: Icon(isMusicPlaying ? Icons.pause : Icons.play_arrow),
       ),
       body: FutureBuilder(

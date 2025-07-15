@@ -47,9 +47,10 @@ data class AudioInfo(
 
 class MusicLoadService(context: Context){
 
-    private val audioList = mutableListOf<AudioInfo>()
+
 
    fun loadMusicFromStorage(context:Context,storagePath : String): MutableList<AudioInfo>{
+        val audioList = mutableListOf<AudioInfo>()
         val folderPath = "/storage/emulated/0/Music/The Witcher 3"
         val audioUri = if(VERSION.SDK_INT >= VERSION_CODES.Q){
             MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
@@ -129,14 +130,8 @@ class MusicLoadService(context: Context){
 
     fun playAudio(uriString: String, mediaController: MediaController?){
         try{
-            val aUri = Uri.parse(uriString)
-                val items = mutableListOf<MediaItem>()
-               if(audioList.isNotEmpty()){
-                   audioList.forEach { a->
-                       items.add(MediaItem.fromUri(a.uri))
-                   }
-               }
-                mediaController?.setMediaItems(items)
+                val item:MediaItem = MediaItem.fromUri(uriString)
+                mediaController?.setMediaItem(item)
                 mediaController?.prepare()
                 mediaController?.play()
         }catch (e:Exception){

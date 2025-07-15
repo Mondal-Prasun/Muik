@@ -1,14 +1,18 @@
 package com.example.muik
 
 import android.Manifest
+import android.app.Activity
+import android.app.ComponentCaller
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.ComponentName
+import android.content.Intent
 import io.flutter.embedding.android.FlutterActivity
 
 //This is libraries to get native apis
 
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import android.util.Log
@@ -29,8 +33,12 @@ class MainActivity : FlutterActivity(){
     companion object{
         private const val DART_CHANNEL = "Android_Channel_Music"
         private const val READ_MUSIC_REQUEST_CODE = 101
+        private const val REQUEST_CODE_OPEN_DIRECTORY = 42
         private var mediaSessionController:MediaController?= null
     }
+
+    private var resultPending:MethodChannel.Result? = null
+
 
     override fun onStart() {
         super.onStart()
@@ -54,8 +62,11 @@ class MainActivity : FlutterActivity(){
          requestAudioStoragePermisson()
         //initializing  MusicLoadService
          val musicLoadService : MusicLoadService = MusicLoadService(this)
-        //creating Foreground Notification channel
-      
+
+
+
+
+
 
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
@@ -63,6 +74,10 @@ class MainActivity : FlutterActivity(){
         ).setMethodCallHandler { call, result ->
 
             when(call.method){
+                "pickPreferredDirectory" ->{
+                       openDirectoryPicker(result)
+                }
+
                 "loadMusicFromStorage" ->{
                     val allData = musicLoadService.loadMusicFromStorage(this,"")
                     val musicMapData = mutableListOf<Map<String,Any>>()
@@ -119,6 +134,47 @@ class MainActivity : FlutterActivity(){
             }
         }
     }
+
+
+    private fun openDirectoryPicker(res: MethodChannel.Result){
+        val intent:Intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+        intent.addFlags(Intent.FLAG_GRANT_PREFIX_URI_PERMISSION)
+        intent.addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+        startActivityForResult(intent, REQUEST_CODE_OPEN_DIRECTORY)
+        resultPending = res
+    }
+
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?,
+        caller: ComponentCaller
+    ) {
+        if(requestCode == REQUEST_CODE_OPEN_DIRECTORY){
+         if(resultCode == Activity.RESULT_OK){
+             val uri:Uri?= data?.data
+             uri?.let {
+                 contentResolver.takePersistableUriPermission(
+                     it,
+                     Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                 )
+                 resultPending?.success(it.toString())
+             }?:run {
+                 resultPending?.error("NULL_URI","NO Uri found",null)
+             }
+         }else{
+             resultPending?.error("CANCELLED", "user cancelled directory picking", null)
+         }
+            resultPending = null
+        }else {
+            super.onActivityResult(requestCode, resultCode, data, caller)
+
+        }
+    }
+
+
 }
 
 
