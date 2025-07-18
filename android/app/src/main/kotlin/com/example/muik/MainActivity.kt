@@ -19,6 +19,7 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import io.flutter.embedding.engine.FlutterEngine
@@ -38,6 +39,10 @@ class MainActivity : FlutterActivity(){
     }
 
     private var resultPending:MethodChannel.Result? = null
+    private val musicLoadService : MusicLoadService = MusicLoadService(this)
+    private val folderLoad:FolderLoad = FolderLoad()
+
+
 
 
     override fun onStart() {
@@ -61,7 +66,7 @@ class MainActivity : FlutterActivity(){
         //requesting media storage permission
          requestAudioStoragePermisson()
         //initializing  MusicLoadService
-         val musicLoadService : MusicLoadService = MusicLoadService(this)
+
 
 
 
@@ -79,30 +84,24 @@ class MainActivity : FlutterActivity(){
                 }
 
                 "loadMusicFromStorage" ->{
-                    val allData = musicLoadService.loadMusicFromStorage(this,"")
-                    val musicMapData = mutableListOf<Map<String,Any>>()
+                      val subDirUriString:String? = call.arguments<String>()
+                    if(subDirUriString != null){
+                        val subDirUri = subDirUriString.toUri()
 
-                    if (allData.isNotEmpty()){
-                       allData.forEach {
-                           musicMapData.add(mapOf<String,Any>(
-                               "id" to "${it.id}",
-                               "name" to it.name,
-                               "uri" to "${it.uri}",
-                               "duration" to it.duration,
-                               "absolutePath" to it.absolutePath,
-                           ))
-                       }
+                        val allContent = folderLoad.loadContentFromDirectories(this, subDirUri)
+
+                        result.success(allContent)
+
                     }else{
-                        Log.d("Error","Music is empty")
-                        result.error("404","Cannot found any audio",
-                            "Storage is not exist or is empty")
+                        result.error("ERROR URI","Sub dir string is null",null)
                     }
-                        result.success(musicMapData)
                 }
 
                 "startMusic" ->{
                     val sUri:String? = call.arguments<String>()
-                    musicLoadService.playAudio(sUri!!, mediaSessionController)
+                    if(sUri!= null) {
+                        musicLoadService.playAudio(sUri, mediaSessionController)
+                    }
                 }
 
                 "pauseMusic" ->{
@@ -155,12 +154,14 @@ class MainActivity : FlutterActivity(){
         if(requestCode == REQUEST_CODE_OPEN_DIRECTORY){
          if(resultCode == Activity.RESULT_OK){
              val uri:Uri?= data?.data
+
              uri?.let {
                  contentResolver.takePersistableUriPermission(
                      it,
                      Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                  )
-                 resultPending?.success(it.toString())
+                 val subDirs = folderLoad.loadSubDirectoriesFromRootDirectories(this,it)
+                 resultPending?.success(subDirs)
              }?:run {
                  resultPending?.error("NULL_URI","NO Uri found",null)
              }

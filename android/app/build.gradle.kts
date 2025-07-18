@@ -39,9 +39,10 @@ android {
     }
 
     dependencies {
-        implementation("androidx.media3:media3-exoplayer:1.6.0")
-        implementation("androidx.media3:media3-common:1.6.0")
-        implementation("androidx.media3:media3-session:1.6.0")
+        implementation("androidx.media3:media3-exoplayer:1.7.1")
+        implementation("androidx.media3:media3-common:1.7.1")
+        implementation("androidx.media3:media3-session:1.7.1")
+        implementation("androidx.documentfile:documentfile:1.1.0")
     }
 }
 

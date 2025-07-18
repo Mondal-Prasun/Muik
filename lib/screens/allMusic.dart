@@ -27,13 +27,12 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isLoaded = false;
 
   void playMusic(MusicInfo music) async {
-    setState(() {
-      musicInfo = music;
-      isMusicPlaying = true;
-    });
-
     if (musicInfo.uri != "") {
       await andoridChannel.playMusic(musicInfo.uri);
+      setState(() {
+        musicInfo = music;
+        isMusicPlaying = true;
+      });
     }
   }
 
