@@ -1,22 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:muik/android_channel.dart';
+import 'package:muik/provider/content_provider.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
   @override
-  State<HomeScreen> createState() {
+  ConsumerState<HomeScreen> createState() {
     return _HomeScreenState();
   }
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  MusicInfo musicInfo = MusicInfo(
-    id: "",
-    name: "",
-    duration: 0,
-    uri: "",
-    absolutePath: "",
-  );
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  MusicInfo musicInfo = MusicInfo(name: "", uri: "");
 
   List<MusicInfo> allMusic = [];
 
@@ -27,8 +23,9 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isLoaded = false;
 
   void playMusic(MusicInfo music) async {
-    if (musicInfo.uri != "") {
-      await andoridChannel.playMusic(musicInfo.uri);
+    // print("MusicUri: ${music.uri}");
+    if (music.uri != "") {
+      await andoridChannel.playMusic(music.uri);
       setState(() {
         musicInfo = music;
         isMusicPlaying = true;
@@ -53,6 +50,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final String subDirUri = ref.read(subDirUriProvider);
+
     return Scaffold(
       appBar: AppBar(
         elevation: 20,
@@ -65,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Icon(isMusicPlaying ? Icons.pause : Icons.play_arrow),
       ),
       body: FutureBuilder(
-        future: andoridChannel.loadMusicFromStorage(),
+        future: andoridChannel.loadMusicFromStorage(subDirUri),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: LinearProgressIndicator(color: Colors.green));
@@ -83,15 +82,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
             if (allMusic.length < data.length) {
               for (final audio in data) {
-                allMusic.add(
-                  MusicInfo(
-                    id: audio["id"],
-                    name: audio["name"],
-                    duration: audio["duration"],
-                    uri: audio["uri"],
-                    absolutePath: audio["absolutePath"],
-                  ),
-                );
+                allMusic.add(MusicInfo(name: audio["name"], uri: audio["uri"]));
               }
             }
             if (allMusic.isNotEmpty) {

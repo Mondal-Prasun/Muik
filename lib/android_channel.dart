@@ -3,43 +3,34 @@ import 'dart:developer';
 import 'package:flutter/services.dart';
 
 class MusicInfo {
-  MusicInfo({
-    required this.id,
-    required this.name,
-    required this.duration,
-    required this.uri,
-    required this.absolutePath,
-  }) : thumbnail = Uint8List(0);
-  final String id;
+  MusicInfo({required this.name, required this.uri});
   final String name;
-  final int duration;
   final String uri;
-  final String absolutePath;
-  Uint8List thumbnail;
 }
 
 class AndroidChannel {
   final _androidBackendChannel = MethodChannel("Android_Channel_Music");
 
-  Future<dynamic> pickDirectory() async {
+  Future<List<dynamic>?> pickDirectory() async {
     try {
-      final dirUri = await _androidBackendChannel.invokeMethod(
+      final dirUris = await _androidBackendChannel.invokeMethod(
         "pickPreferredDirectory",
       );
 
-      return dirUri;
+      return dirUris;
     } on PlatformException catch (e) {
       log(e.message!);
       return null;
     }
   }
 
-  Future<List<dynamic>?> loadMusicFromStorage<T>() async {
+  Future<List<dynamic>?> loadMusicFromStorage(String subDirUriString) async {
     try {
-      final allData = await _androidBackendChannel.invokeMethod(
+      final allContent = await _androidBackendChannel.invokeMethod(
         "loadMusicFromStorage",
+        subDirUriString,
       );
-      return allData;
+      return allContent;
     } on PlatformException catch (e) {
       log(e.message!);
       return null;

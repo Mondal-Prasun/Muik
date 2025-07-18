@@ -14,7 +14,7 @@ class FolderLoad {
         if(rootDir != null && rootDir.isDirectory){
             rootDir.listFiles().forEach { file->
                 if (file.isDirectory) {
-                   println("Subfolders : ${file.name} and uri is : ${file.uri}")
+//                   println("Subfolders : ${file.name} and uri is : ${file.uri}")
                     subDirectories.add(
                         mapOf<String, String>(
                             "name" to file.name!!,
@@ -33,7 +33,7 @@ class FolderLoad {
         if (contentDirectory != null && contentDirectory.isDirectory ){
             contentDirectory.listFiles().forEach { file->
                 if (file.isFile) {
-                    println("Subfolders : ${file.name} and uri is : ${file.uri}")
+//                    println("Subfolders : ${file.name} and uri is : ${file.uri}")
                     allContent.add(
                         mapOf<String, String>(
                             "name" to file.name!!,

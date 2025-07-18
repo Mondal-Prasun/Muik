@@ -64,7 +64,7 @@ class MainActivity : FlutterActivity(){
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         //requesting media storage permission
-         requestAudioStoragePermisson()
+         requestAudioStoragePermission()
         //initializing  MusicLoadService
 
 
@@ -122,14 +122,14 @@ class MainActivity : FlutterActivity(){
 
 
 
-    private fun requestAudioStoragePermisson(){
+    private fun requestAudioStoragePermission(){
          if(VERSION.SDK_INT >= VERSION_CODES.TIRAMISU){
             if(ActivityCompat.checkSelfPermission(this,Manifest.permission.READ_MEDIA_AUDIO) ==
                 PackageManager.PERMISSION_DENIED){
                  ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_MEDIA_AUDIO),
                      READ_MUSIC_REQUEST_CODE)
             }else{
-                 Log.d("Music","Already have permisson")
+                 Log.d("Music","Already have permission")
             }
         }
     }
@@ -171,7 +171,6 @@ class MainActivity : FlutterActivity(){
             resultPending = null
         }else {
             super.onActivityResult(requestCode, resultCode, data, caller)
-
         }
     }
 
