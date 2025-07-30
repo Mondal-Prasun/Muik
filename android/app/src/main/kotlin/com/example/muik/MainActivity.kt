@@ -15,6 +15,8 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
@@ -25,8 +27,7 @@ import androidx.media3.session.SessionToken
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import java.util.Objects
-
-
+import kotlin.jvm.Throws
 
 
 class MainActivity : FlutterActivity(){
@@ -88,9 +89,12 @@ class MainActivity : FlutterActivity(){
                     if(subDirUriString != null){
                         val subDirUri = subDirUriString.toUri()
 
-                        val allContent = folderLoad.loadContentFromDirectories(this, subDirUri)
-
-                        result.success(allContent)
+                        Thread{
+                            val allContent = folderLoad.loadContentFromDirectories(this, subDirUri)
+                            Looper.getMainLooper().run {
+                                result.success(allContent)
+                            }
+                        }.start()
 
                     }else{
                         result.error("ERROR URI","Sub dir string is null",null)
