@@ -49,63 +49,63 @@ class MusicLoadService(context: Context){
 
 
 
-   fun loadMusicFromStorage(context:Context,storagePath : String): MutableList<AudioInfo>{
-        val audioList = mutableListOf<AudioInfo>()
-        val folderPath = "/storage/emulated/0/Music/The Witcher 3"
-        val audioUri = if(VERSION.SDK_INT >= VERSION_CODES.Q){
-            MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
-        }else{
-                   MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-        }
-
-       val projection = arrayOf(
-           MediaStore.Audio.Media._ID,
-           MediaStore.Audio.Media.DISPLAY_NAME,
-           MediaStore.Audio.Media.DURATION,
-           MediaStore.Audio.Media.DATA,
-       )
-       val selection = "${MediaStore.Audio.Media.DATA} LIKE ?"
-
-       val selectionArgs = arrayOf(
-           "$folderPath/%",
-       )
-
-       val sortOrder = "${MediaStore.Audio.Media.DISPLAY_NAME} ASC"
-
-       val query = context.contentResolver.query(
-           audioUri,
-           projection,
-           selection,
-           selectionArgs,
-           sortOrder
-       )
-
-
-       query?.use { cursor ->
-           val columnId = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
-           val columName = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME)
-           val columnDuration = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
-          val columnData = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
-
-           while(cursor.moveToNext()){
-               val id = cursor.getLong(columnId)
-               val name = cursor.getString(columName)
-               val duration = cursor.getInt(columnDuration)
-               val data = cursor.getString(columnData)
-               val contentUri= ContentUris.withAppendedId(audioUri,id)
-
-
-
-               audioList.add(AudioInfo(
-                   id,contentUri,name,duration, data,
-               ))
-
-           }
-       }
-
-       query?.close()
-         return  audioList
-    }
+//   fun loadMusicFromStorage(context:Context,storagePath : String): MutableList<AudioInfo>{
+//        val audioList = mutableListOf<AudioInfo>()
+//        val folderPath = "/storage/emulated/0/Music/The Witcher 3"
+//        val audioUri = if(VERSION.SDK_INT >= VERSION_CODES.Q){
+//            MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
+//        }else{
+//                   MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+//        }
+//
+//       val projection = arrayOf(
+//           MediaStore.Audio.Media._ID,
+//           MediaStore.Audio.Media.DISPLAY_NAME,
+//           MediaStore.Audio.Media.DURATION,
+//           MediaStore.Audio.Media.DATA,
+//       )
+//       val selection = "${MediaStore.Audio.Media.DATA} LIKE ?"
+//
+//       val selectionArgs = arrayOf(
+//           "$folderPath/%",
+//       )
+//
+//       val sortOrder = "${MediaStore.Audio.Media.DISPLAY_NAME} ASC"
+//
+//       val query = context.contentResolver.query(
+//           audioUri,
+//           projection,
+//           selection,
+//           selectionArgs,
+//           sortOrder
+//       )
+//
+//
+//       query?.use { cursor ->
+//           val columnId = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
+//           val columName = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME)
+//           val columnDuration = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
+//          val columnData = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
+//
+//           while(cursor.moveToNext()){
+//               val id = cursor.getLong(columnId)
+//               val name = cursor.getString(columName)
+//               val duration = cursor.getInt(columnDuration)
+//               val data = cursor.getString(columnData)
+//               val contentUri= ContentUris.withAppendedId(audioUri,id)
+//
+//
+//
+//               audioList.add(AudioInfo(
+//                   id,contentUri,name,duration, data,
+//               ))
+//
+//           }
+//       }
+//
+//       query?.close()
+//         return  audioList
+//    }
 
      fun getAudioThumbnail(context: Context,aUri : Uri) :ByteArray?{
         val retriver = MediaMetadataRetriever()
@@ -128,7 +128,7 @@ class MusicLoadService(context: Context){
         }
     }
 
-    fun playAudio(uriString: String, mediaController: MediaController?){
+    fun playSingleAudio(uriString: String, mediaController: MediaController?){
         try{
                 val item:MediaItem = MediaItem.fromUri(uriString)
                 mediaController?.setMediaItem(item)
@@ -137,7 +137,47 @@ class MusicLoadService(context: Context){
         }catch (e:Exception){
             Log.d("MusicLoadService","Cannot play music:${e.message}")
         }
+    }
 
+    fun playListAudio(audioList : List<String>, mediaController: MediaController?){
+        try{
+            val items:MutableList<MediaItem> = mutableListOf<MediaItem>()
+            audioList.forEach { it->
+                items.add(MediaItem.fromUri(it))
+            }
+            mediaController?.setMediaItems(items)
+            mediaController?.prepare()
+            mediaController?.play()
+
+        }catch (e:Exception){
+            Log.d("MusicLoadService","Cannot pause music:${e.message}")
+        }
+    }
+
+    fun pauseAudio(mediaController: MediaController?){
+        try{
+            if(mediaController!!.isPlaying){
+                mediaController.pause()
+            }
+        }catch (e:Exception){
+            Log.d("MusicLoadService","Cannot pause music:${e.message}")
+        }
+    }
+
+
+    fun resumeAudio(mediaController: MediaController?){
+        try{
+            if(!mediaController!!.isPlaying){
+                mediaController.play()
+            }
+        }catch (e:Exception){
+            Log.d("MusicLoadService","Cannot resume music:${e.message}")
+        }
+    }
+
+
+    fun isMusicPlaying(mediaController: MediaController?): Boolean{
+        return mediaController!!.isPlaying
     }
 
 

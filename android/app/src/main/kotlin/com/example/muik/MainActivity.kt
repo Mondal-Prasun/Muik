@@ -3,8 +3,7 @@ package com.example.muik
 import android.Manifest
 import android.app.Activity
 import android.app.ComponentCaller
-import android.app.NotificationChannel
-import android.app.NotificationManager
+
 import android.content.ComponentName
 import android.content.Intent
 import io.flutter.embedding.android.FlutterActivity
@@ -15,7 +14,6 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
-import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -26,8 +24,6 @@ import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
-import java.util.Objects
-import kotlin.jvm.Throws
 
 
 class MainActivity : FlutterActivity(){
@@ -66,7 +62,6 @@ class MainActivity : FlutterActivity(){
         super.configureFlutterEngine(flutterEngine)
         //requesting media storage permission
          requestAudioStoragePermission()
-        //initializing  MusicLoadService
 
 
 
@@ -85,41 +80,46 @@ class MainActivity : FlutterActivity(){
                 }
 
                 "loadMusicFromStorage" ->{
-                      val subDirUriString:String? = call.arguments<String>()
-                    if(subDirUriString != null){
+                      val subDirUriString:String = call.arguments<String>() as String
+
                         val subDirUri = subDirUriString.toUri()
+                         try{
+                             Thread{
+                                 val allContent = folderLoad.loadContentFromDirectories(this, subDirUri)
+                                 Looper.getMainLooper().run {
+                                     result.success(allContent)
+                                 }
+                             }.start()
+                         }catch (e:Exception){
+                             result.error("ERROR URI","Sub dir string is null : ${e.message}",null)
+                         }
+                }
 
-                        Thread{
-                            val allContent = folderLoad.loadContentFromDirectories(this, subDirUri)
-                            Looper.getMainLooper().run {
-                                result.success(allContent)
-                            }
-                        }.start()
-
-                    }else{
-                        result.error("ERROR URI","Sub dir string is null",null)
+                "startSingleMusic" ->{
+                    val sUri:String? = call.arguments<String>()
+                    if(sUri!= null) {
+                        musicLoadService.playSingleAudio(sUri, mediaSessionController)
                     }
                 }
 
-                "startMusic" ->{
-                    val sUri:String? = call.arguments<String>()
-                    if(sUri!= null) {
-                        musicLoadService.playAudio(sUri, mediaSessionController)
+                "startMusicList" ->{
+                    val audioUriStrings = call.arguments<List<String>>() as List<String>
+                    if(audioUriStrings.isNotEmpty()){
+                        musicLoadService.playListAudio(audioUriStrings, mediaSessionController)
                     }
                 }
 
                 "pauseMusic" ->{
-
+                     musicLoadService.pauseAudio(mediaSessionController)
                 }
                 "resumeMusic" ->{
-
+                    musicLoadService.resumeAudio(mediaSessionController)
                 }
                 "isMusicPlaying" ->{
-
-
+                    val isPlaying = musicLoadService.isMusicPlaying(mediaSessionController)
+                    result.success(isPlaying)
                 }
             }
-
         }
     }
 

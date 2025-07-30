@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:muik/android_channel.dart';
@@ -27,16 +28,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void playMusic(MusicInfo music) async {
     // print("MusicUri: ${music.uri}");
     if (music.uri != "") {
-      await androidChannel.playMusic(music.uri);
       setState(() {
         musicInfo = music;
         isMusicPlaying = true;
       });
+
+      await androidChannel.playSingleMusic(music.uri);
     }
   }
 
   void pauseOrResumeMusic() async {
     final isPlaying = await androidChannel.isMusicPlaying();
+
     if (isPlaying) {
       setState(() {
         isMusicPlaying = false;
@@ -47,6 +50,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         isMusicPlaying = true;
       });
       await androidChannel.resumeMusic();
+    }
+  }
+
+  void playListMusic() async {
+    try {
+      if (allMusic != []) {
+        List<String> items = [];
+        for (final a in allMusic) {
+          items.add(a.uri);
+        }
+        await androidChannel.playListMusic(items);
+      }
+    } catch (e) {
+      log(e.toString());
     }
   }
 
@@ -65,10 +82,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         backgroundColor: Colors.green,
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: pauseOrResumeMusic,
+        onPressed: playListMusic,
 
         child: Icon(isMusicPlaying ? Icons.pause : Icons.play_arrow),
       ),
+
       body:
           allMusic.isEmpty
               ? FutureBuilder(

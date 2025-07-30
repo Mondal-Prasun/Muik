@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:ui';
 
 import 'package:flutter/services.dart';
 
@@ -37,9 +38,17 @@ class AndroidChannel {
     }
   }
 
-  Future<void> playMusic(String musicUri) async {
+  Future<void> playSingleMusic(String musicUri) async {
     try {
-      await _androidBackendChannel.invokeMethod("startMusic", musicUri);
+      await _androidBackendChannel.invokeMethod("startSingleMusic", musicUri);
+    } on PlatformException catch (e) {
+      log(e.message!);
+    }
+  }
+
+  Future<void> playListMusic(List<String> listMusic) async {
+    try {
+      await _androidBackendChannel.invokeMethod("startMusicList", listMusic);
     } on PlatformException catch (e) {
       log(e.message!);
     }
@@ -70,16 +79,6 @@ class AndroidChannel {
       await _androidBackendChannel.invokeMethod("resumeMusic");
     } on PlatformException catch (e) {
       log(e.message!);
-    }
-  }
-
-  Future<bool> stopMusic() async {
-    try {
-      await _androidBackendChannel.invokeMethod("stopMusic");
-      return true;
-    } on PlatformException catch (e) {
-      log(e.message!);
-      return false;
     }
   }
 }
