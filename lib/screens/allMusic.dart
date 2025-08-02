@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:muik/android_channel.dart';
@@ -54,16 +53,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void playListMusic() async {
-    try {
-      if (allMusic != []) {
-        List<String> items = [];
-        for (final a in allMusic) {
-          items.add(a.uri);
-        }
-        await androidChannel.playListMusic(items);
+    if (allMusic != []) {
+      List<String> items = [];
+      for (final a in allMusic) {
+        items.add(a.uri);
       }
-    } catch (e) {
-      log(e.toString());
+      await androidChannel.playListMusic(items);
+    }
+  }
+
+  void shuffleMusic() async {
+    if (allMusic != []) {
+      List<String> items = [];
+      for (final a in allMusic) {
+        items.add(a.uri);
+      }
+      await androidChannel.shuffleMusic(items);
     }
   }
 
@@ -75,6 +80,33 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final String subDirUri = ref.read(subDirUriProvider);
     allMusic = ref.watch(musicCacheProvider);
+
+    Widget mainContent = Stack(
+      alignment: AlignmentDirectional.center,
+      fit: StackFit.passthrough,
+      children: [
+        ListView.builder(
+          itemCount: allMusic.length,
+          itemBuilder: (context, index) {
+            return InkWell(
+              onTap: () => playMusic(allMusic[index]),
+              child: ListTile(
+                leading: Text("$index|"),
+                title: Text(allMusic[index].name),
+              ),
+            );
+          },
+        ),
+        IconButton(
+          icon: Icon(Icons.shuffle),
+          color: Colors.green,
+          onPressed: () {
+            androidChannel.toggleShuffle();
+          },
+        ),
+      ],
+    );
+
     return Scaffold(
       appBar: AppBar(
         elevation: 20,
@@ -117,18 +149,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     }
                     if (allMusic.isNotEmpty) {
                       ref.read(musicCacheProvider.notifier).setCache(allMusic);
-                      return ListView.builder(
-                        itemCount: allMusic.length,
-                        itemBuilder: (context, index) {
-                          return InkWell(
-                            onTap: () => playMusic(allMusic[index]),
-                            child: ListTile(
-                              leading: Text("$index|"),
-                              title: Text(allMusic[index].name),
-                            ),
-                          );
-                        },
-                      );
+                      return mainContent;
                     }
                   }
 
@@ -140,18 +161,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   );
                 },
               )
-              : ListView.builder(
-                itemCount: allMusic.length,
-                itemBuilder: (context, index) {
-                  return InkWell(
-                    onTap: () => playMusic(allMusic[index]),
-                    child: ListTile(
-                      leading: Text("$index|"),
-                      title: Text(allMusic[index].name),
-                    ),
-                  );
-                },
-              ),
+              : mainContent,
     );
   }
 }

@@ -33,7 +33,6 @@ class MusicMediaSessionService :MediaSessionService() {
         val player = ExoPlayer.Builder(this).build()
         _mediaSession = MediaSession.Builder(this,player)
             .build()
-
     }
     
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? {

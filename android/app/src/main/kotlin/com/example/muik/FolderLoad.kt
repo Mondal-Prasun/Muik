@@ -12,7 +12,7 @@ class FolderLoad {
           val subDirectories = mutableListOf<Map<String,String>>()
         val rootDir = DocumentFile.fromTreeUri(context, uri)
         if(rootDir != null && rootDir.isDirectory){
-            rootDir.listFiles().forEach { file->
+            for(file in rootDir.listFiles()){
                 if (file.isDirectory) {
 //                   println("Subfolders : ${file.name} and uri is : ${file.uri}")
                     subDirectories.add(
@@ -31,7 +31,7 @@ class FolderLoad {
         val contentDirectory = DocumentFile.fromTreeUri(context, uri)
         val allContent = mutableListOf<Map<String, String>>()
         if (contentDirectory != null && contentDirectory.isDirectory ){
-            contentDirectory.listFiles().forEach { file->
+            for(file in contentDirectory.listFiles()){
                 if (file.isFile) {
 //                    println("Subfolders : ${file.name} and uri is : ${file.uri}")
                     allContent.add(

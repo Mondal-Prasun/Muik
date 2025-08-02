@@ -1,6 +1,4 @@
 import 'dart:developer';
-import 'dart:ui';
-
 import 'package:flutter/services.dart';
 
 class MusicInfo {
@@ -49,6 +47,22 @@ class AndroidChannel {
   Future<void> playListMusic(List<String> listMusic) async {
     try {
       await _androidBackendChannel.invokeMethod("startMusicList", listMusic);
+    } on PlatformException catch (e) {
+      log(e.message!);
+    }
+  }
+
+  Future<void> shuffleMusic(List<String> listMusic) async {
+    try {
+      await _androidBackendChannel.invokeMethod("shuffleMusic", listMusic);
+    } on PlatformException catch (e) {
+      log(e.message!);
+    }
+  }
+
+  Future<void> toggleShuffle() async {
+    try {
+      await _androidBackendChannel.invokeMethod("toggleShuffleMode");
     } on PlatformException catch (e) {
       log(e.message!);
     }

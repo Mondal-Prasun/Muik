@@ -1,51 +1,25 @@
 package com.example.muik
 
 
-import android.app.Notification
-import android.app.PendingIntent
-import android.app.Service
-import android.content.ComponentName
-import android.content.ContentResolver
-import android.content.ContentUris
+
 import android.content.Context
-import android.content.Intent
-import android.content.pm.ServiceInfo
+
 import android.media.MediaMetadataRetriever
-import android.media.MediaPlayer
-import android.media.ThumbnailUtils
+
 import android.net.Uri
-import android.os.Binder
-import android.os.Build.VERSION
-import android.os.Build.VERSION_CODES
-import android.os.IBinder
-import android.provider.MediaStore
+
 import android.util.Log
-import androidx.core.app.NotificationCompat
-import androidx.core.app.ServiceCompat
-import androidx.core.content.ContextCompat
+
 import androidx.media3.common.MediaItem
-import androidx.media3.exoplayer.ExoPlayer
+
 import androidx.media3.session.MediaController
-import androidx.media3.session.MediaSession
-import androidx.media3.session.MediaSessionService
-import androidx.media3.session.SessionToken
-import androidx.media3.session.legacy.MediaSessionCompat
-import com.google.common.util.concurrent.ListenableFuture
-import com.google.common.util.concurrent.MoreExecutors
-import java.io.IOException
-import kotlin.contracts.contract
 
 
-data class AudioInfo(
-    val id : Long,
-    val uri :Uri,
-    val name :String,
-    val duration:Int,
-    val absolutePath : String,
-    )
 
 
-class MusicLoadService(context: Context){
+
+
+class MusicLoadService{
 
 
 
@@ -142,8 +116,11 @@ class MusicLoadService(context: Context){
     fun playListAudio(audioList : List<String>, mediaController: MediaController?){
         try{
             val items:MutableList<MediaItem> = mutableListOf<MediaItem>()
-            audioList.forEach { it->
-                items.add(MediaItem.fromUri(it))
+            for(i in audioList){
+                items.add(MediaItem.fromUri(i))
+            }
+            if(mediaController?.shuffleModeEnabled == true){
+                mediaController.shuffleModeEnabled = false
             }
             mediaController?.setMediaItems(items)
             mediaController?.prepare()
@@ -180,6 +157,34 @@ class MusicLoadService(context: Context){
         return mediaController!!.isPlaying
     }
 
+    fun shuffleMusic(audioList: List<String>, mediaController: MediaController?){
+
+        try{
+            val items:MutableList<MediaItem> = mutableListOf<MediaItem>()
+            for(i in audioList){
+                items.add(MediaItem.fromUri(i))
+            }
+            mediaController?.shuffleModeEnabled = true
+            mediaController?.setMediaItems(items)
+            mediaController?.prepare()
+            mediaController?.play()
+
+        }catch (e:Exception){
+            Log.d("MusicLoadService","Cannot Shuffle music:${e.message}")
+        }
+    }
+
+    fun toggleShuffleMode(mediaController: MediaController?){
+        try{
+            if(mediaController?.shuffleModeEnabled == true){
+                mediaController.shuffleModeEnabled = false
+            }else{
+                mediaController?.shuffleModeEnabled = true
+            }
+        }catch (e:Exception){
+            Log.d("MusicLoadService","Cannot toggle Shuffle music:${e.message}")
+        }
+    }
 
 }
 

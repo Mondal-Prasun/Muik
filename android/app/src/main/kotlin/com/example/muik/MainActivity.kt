@@ -119,6 +119,15 @@ class MainActivity : FlutterActivity(){
                     val isPlaying = musicLoadService.isMusicPlaying(mediaSessionController)
                     result.success(isPlaying)
                 }
+                "shuffleMusic" ->{
+                    val audioUriStrings = call.arguments<List<String>>() as List<String>
+                    if(audioUriStrings.isNotEmpty()){
+                        musicLoadService.shuffleMusic(audioUriStrings, mediaSessionController)
+                    }
+                }
+                "toggleShuffleMode" ->{
+                   musicLoadService.toggleShuffleMode(mediaSessionController)
+                }
             }
         }
     }
