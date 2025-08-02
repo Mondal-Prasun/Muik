@@ -3,20 +3,24 @@ package com.example.muik
 
 
 import android.content.Context
+import android.media.MediaActionSound
 
 import android.media.MediaMetadataRetriever
 
 import android.net.Uri
+import android.os.Build
 
 import android.util.Log
+import androidx.annotation.RequiresApi
 
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
+import androidx.media3.exoplayer.MetadataRetriever
 
 import androidx.media3.session.MediaController
-
-
-
-
+import androidx.media3.session.legacy.MediaMetadataCompat
+import java.net.URI
+import androidx.core.net.toUri
 
 
 class MusicLoadService{
@@ -113,11 +117,22 @@ class MusicLoadService{
         }
     }
 
-    fun playListAudio(audioList : List<String>, mediaController: MediaController?){
+
+    fun playListAudio(audioList : List<Map<String,String>>, mediaController: MediaController?){
+
         try{
             val items:MutableList<MediaItem> = mutableListOf<MediaItem>()
             for(i in audioList){
-                items.add(MediaItem.fromUri(i))
+
+                   val metaData = MediaMetadata.Builder()
+                       .setTitle("Test")
+                       .build()
+                  val  item = MediaItem.Builder()
+                       .setUri(i["uri"])
+                       .setMediaMetadata(metaData)
+                       .build()
+
+                items.add(item)
             }
             if(mediaController?.shuffleModeEnabled == true){
                 mediaController.shuffleModeEnabled = false
@@ -157,12 +172,20 @@ class MusicLoadService{
         return mediaController!!.isPlaying
     }
 
-    fun shuffleMusic(audioList: List<String>, mediaController: MediaController?){
+    fun shuffleMusic(audioList: List<Map<String,String>>, mediaController: MediaController?){
 
         try{
             val items:MutableList<MediaItem> = mutableListOf<MediaItem>()
             for(i in audioList){
-                items.add(MediaItem.fromUri(i))
+                    val metaData = MediaMetadata.Builder()
+                        .setTitle(i["name"])
+                        .build()
+                    val item = MediaItem.Builder()
+                        .setUri(i["uri"])
+                        .setMediaMetadata(metaData)
+                        .build()
+
+                items.add(item)
             }
             mediaController?.shuffleModeEnabled = true
             mediaController?.setMediaItems(items)

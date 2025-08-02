@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/services.dart';
 
@@ -44,7 +45,7 @@ class AndroidChannel {
     }
   }
 
-  Future<void> playListMusic(List<String> listMusic) async {
+  Future<void> playListMusic(List<Map<String, String>> listMusic) async {
     try {
       await _androidBackendChannel.invokeMethod("startMusicList", listMusic);
     } on PlatformException catch (e) {
@@ -52,7 +53,7 @@ class AndroidChannel {
     }
   }
 
-  Future<void> shuffleMusic(List<String> listMusic) async {
+  Future<void> shuffleMusic(List<Map<String, String>> listMusic) async {
     try {
       await _androidBackendChannel.invokeMethod("shuffleMusic", listMusic);
     } on PlatformException catch (e) {

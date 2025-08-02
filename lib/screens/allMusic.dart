@@ -24,6 +24,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   bool isLoaded = false;
 
+  String cleanFileName(String input) {
+    final regex = RegExp(
+      r'^\d+\.\s*|(\.flac|\.mp3|\.wav|\.ogg|\.aac|\.m4a|\.alac|\.opus)$',
+      caseSensitive: false,
+    );
+    return input.replaceAll(regex, '').trim();
+  }
+
   void playMusic(MusicInfo music) async {
     // print("MusicUri: ${music.uri}");
     if (music.uri != "") {
@@ -54,9 +62,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   void playListMusic() async {
     if (allMusic != []) {
-      List<String> items = [];
+      List<Map<String, String>> items = [];
       for (final a in allMusic) {
-        items.add(a.uri);
+        items.add({"uri": a.uri, "name": a.name});
       }
       await androidChannel.playListMusic(items);
     }
@@ -64,9 +72,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   void shuffleMusic() async {
     if (allMusic != []) {
-      List<String> items = [];
+      List<Map<String, String>> items = [];
       for (final a in allMusic) {
-        items.add(a.uri);
+        items.add({"uri": a.uri, "name": a.name});
       }
       await androidChannel.shuffleMusic(items);
     }
@@ -114,7 +122,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         backgroundColor: Colors.green,
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: playListMusic,
+        onPressed: shuffleMusic,
 
         child: Icon(isMusicPlaying ? Icons.pause : Icons.play_arrow),
       ),
@@ -142,9 +150,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
                     if (allMusic.length < data.length) {
                       for (final audio in data) {
-                        allMusic.add(
-                          MusicInfo(name: audio["name"], uri: audio["uri"]),
-                        );
+                        if (audio["name"].toString().contains(
+                          RegExp(r'(\.jpeg|\.png|\.jpeg)'),
+                        )) {
+                          continue;
+                        }
+                        final mName = cleanFileName(audio["name"]);
+                        allMusic.add(MusicInfo(name: mName, uri: audio["uri"]));
                       }
                     }
                     if (allMusic.isNotEmpty) {

@@ -36,7 +36,7 @@ class MainActivity : FlutterActivity(){
     }
 
     private var resultPending:MethodChannel.Result? = null
-    private val musicLoadService : MusicLoadService = MusicLoadService(this)
+    private val musicLoadService : MusicLoadService = MusicLoadService()
     private val folderLoad:FolderLoad = FolderLoad()
 
 
@@ -103,7 +103,7 @@ class MainActivity : FlutterActivity(){
                 }
 
                 "startMusicList" ->{
-                    val audioUriStrings = call.arguments<List<String>>() as List<String>
+                    val audioUriStrings = call.arguments<List<Map<String,String>>>() as List<Map<String,String>>
                     if(audioUriStrings.isNotEmpty()){
                         musicLoadService.playListAudio(audioUriStrings, mediaSessionController)
                     }
@@ -120,7 +120,7 @@ class MainActivity : FlutterActivity(){
                     result.success(isPlaying)
                 }
                 "shuffleMusic" ->{
-                    val audioUriStrings = call.arguments<List<String>>() as List<String>
+                    val audioUriStrings = call.arguments<List<Map<String,String>>>() as List<Map<String,String>>
                     if(audioUriStrings.isNotEmpty()){
                         musicLoadService.shuffleMusic(audioUriStrings, mediaSessionController)
                     }
