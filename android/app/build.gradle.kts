@@ -24,7 +24,7 @@ android {
         applicationId = "com.example.muik"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        minSdk = 30
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -39,9 +39,9 @@ android {
     }
 
     dependencies {
-        implementation("androidx.media3:media3-exoplayer:1.7.1")
-        implementation("androidx.media3:media3-common:1.7.1")
-        implementation("androidx.media3:media3-session:1.7.1")
+        implementation("androidx.media3:media3-exoplayer:1.8.0")
+        implementation("androidx.media3:media3-common:1.8.0")
+        implementation("androidx.media3:media3-session:1.8.0")
         implementation("androidx.documentfile:documentfile:1.1.0")
     }
 }

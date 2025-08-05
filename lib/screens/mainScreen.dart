@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:muik/android_channel.dart';
+import 'package:muik/channels/android_channel.dart';
 import 'package:muik/provider/content_provider.dart';
 import 'package:muik/screens/allMusic.dart';
 

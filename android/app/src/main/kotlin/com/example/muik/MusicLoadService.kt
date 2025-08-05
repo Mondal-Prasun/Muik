@@ -3,24 +3,14 @@ package com.example.muik
 
 
 import android.content.Context
-import android.media.MediaActionSound
-
 import android.media.MediaMetadataRetriever
 
 import android.net.Uri
-import android.os.Build
-
 import android.util.Log
-import androidx.annotation.RequiresApi
-
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
-import androidx.media3.exoplayer.MetadataRetriever
-
 import androidx.media3.session.MediaController
-import androidx.media3.session.legacy.MediaMetadataCompat
-import java.net.URI
-import androidx.core.net.toUri
+
 
 
 class MusicLoadService{

@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:muik/android_channel.dart';
+import 'package:muik/channels/android_channel.dart';
+import 'package:muik/channels/flutter_channel.dart';
 import 'package:muik/provider/content_provider.dart';
 import 'package:muik/provider/musicCache_Provider.dart';
 
@@ -19,6 +20,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   List<MusicInfo> allMusic = [];
 
   final androidChannel = AndroidChannel();
+  final flutterChannel = FlutterChannel();
 
   bool isMusicPlaying = false;
 
@@ -82,6 +84,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Future<bool> working(String test) async {
     return true;
+  }
+
+  dynamic printIt(dynamic isIt) {
+    print("Its working: $isIt");
+  }
+
+  dynamic mediaChanged(dynamic meta) {
+    print("changed music : ${meta["name"]} | ${meta["art"]}");
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    flutterChannel.initPlatFromListners({
+      "IsKtMusicPlaying": printIt,
+      "MediaChanged": mediaChanged,
+    });
   }
 
   @override
@@ -151,7 +170,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     if (allMusic.length < data.length) {
                       for (final audio in data) {
                         if (audio["name"].toString().contains(
-                          RegExp(r'(\.jpeg|\.png|\.jpeg)'),
+                          RegExp(r'(\.jpg|\.png|\.jpeg)'),
                         )) {
                           continue;
                         }

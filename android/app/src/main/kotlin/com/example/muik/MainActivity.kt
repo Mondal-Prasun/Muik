@@ -3,6 +3,7 @@ package com.example.muik
 import android.Manifest
 import android.app.Activity
 import android.app.ComponentCaller
+import android.app.PendingIntent
 
 import android.content.ComponentName
 import android.content.Intent
@@ -16,20 +17,23 @@ import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import android.os.Looper
 import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
+import androidx.media3.common.MediaMetadata
+import androidx.media3.common.Player
 import androidx.media3.session.MediaController
+import androidx.media3.session.SessionCommands
 import androidx.media3.session.SessionToken
 import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.embedding.engine.dart.DartExecutor
 import io.flutter.plugin.common.MethodChannel
 
 
 class MainActivity : FlutterActivity(){
-
     companion object{
         private const val DART_CHANNEL = "Android_Channel_Music"
+        private const val FLUTTER_CHANNEL = "Flutter_Channel_Music"
         private const val READ_MUSIC_REQUEST_CODE = 101
         private const val REQUEST_CODE_OPEN_DIRECTORY = 42
         private var mediaSessionController:MediaController?= null
@@ -38,6 +42,8 @@ class MainActivity : FlutterActivity(){
     private var resultPending:MethodChannel.Result? = null
     private val musicLoadService : MusicLoadService = MusicLoadService()
     private val folderLoad:FolderLoad = FolderLoad()
+
+    private var flEngine : FlutterEngine? = null
 
 
 
@@ -55,18 +61,29 @@ class MainActivity : FlutterActivity(){
             ContextCompat.getMainExecutor(this@MainActivity)
         )
 
+        val flChannel = MethodChannel(flEngine!!.dartExecutor.binaryMessenger, FLUTTER_CHANNEL)
+
+        mediaSessionController?.addListener(object : Player.Listener{
+            override fun onIsPlayingChanged(isPlaying: Boolean) {
+                flChannel.invokeMethod("IsKtMusicPlaying",isPlaying)
+            }
+
+            override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
+                 flChannel.invokeMethod("MediaChanged", mapOf<String,String>(
+                     "name" to mediaMetadata.title.toString(),
+                     "art" to mediaMetadata.artist.toString()
+                     ))
+            }
+        })
     }
 
-    @RequiresApi(VERSION_CODES.O)
+
+
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         //requesting media storage permission
          requestAudioStoragePermission()
-
-
-
-
-
+        flEngine = flutterEngine
 
 
         MethodChannel(
@@ -130,10 +147,8 @@ class MainActivity : FlutterActivity(){
                 }
             }
         }
+
     }
-
-
-
 
     private fun requestAudioStoragePermission(){
          if(VERSION.SDK_INT >= VERSION_CODES.TIRAMISU){
@@ -186,7 +201,6 @@ class MainActivity : FlutterActivity(){
             super.onActivityResult(requestCode, resultCode, data, caller)
         }
     }
-
 
 }
 

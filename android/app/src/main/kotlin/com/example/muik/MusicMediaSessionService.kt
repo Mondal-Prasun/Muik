@@ -8,6 +8,7 @@ import android.content.Intent
 
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
+import androidx.media3.common.Player
 
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
@@ -16,13 +17,14 @@ import androidx.media3.session.MediaSessionService
 
 
 
-class MusicMediaSessionService :MediaSessionService() {
+class MusicMediaSessionService:MediaSessionService(){
     
     private var _mediaSession:MediaSession? = null
+    private var _player:ExoPlayer? = null
     private val mediaSession get() = _mediaSession!!
 
     companion object{
-        private val immutableFlag = if(VERSION.SDK_INT >= VERSION_CODES.O) PendingIntent.FLAG_IMMUTABLE else 0
+        private const val immutableFlag = PendingIntent.FLAG_IMMUTABLE
     }
 
 
@@ -30,9 +32,16 @@ class MusicMediaSessionService :MediaSessionService() {
     override fun onCreate() {
         super.onCreate()
 
-        val player = ExoPlayer.Builder(this).build()
-        _mediaSession = MediaSession.Builder(this,player)
+        _player = ExoPlayer.Builder(this).build()
+        _mediaSession = MediaSession.Builder(this,_player!!)
             .build()
+
+        _player!!.addListener(object : Player.Listener{
+            override fun onIsPlayingChanged(isPlaying: Boolean) {
+
+                super.onIsPlayingChanged(isPlaying)
+            }
+        })
     }
     
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? {
@@ -68,7 +77,5 @@ class MusicMediaSessionService :MediaSessionService() {
             getPendingIntent(0, immutableFlag or PendingIntent.FLAG_UPDATE_CURRENT)
         }
     }
-
-
 
 }

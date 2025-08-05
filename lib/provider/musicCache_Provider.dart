@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:muik/android_channel.dart';
+import 'package:muik/channels/android_channel.dart';
 
 class _MusicCacheProvider extends StateNotifier<List<MusicInfo>> {
   _MusicCacheProvider() : super([]);
