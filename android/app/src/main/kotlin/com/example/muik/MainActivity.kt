@@ -7,6 +7,7 @@ import android.app.PendingIntent
 
 import android.content.ComponentName
 import android.content.Intent
+import android.content.SharedPreferences
 import io.flutter.embedding.android.FlutterActivity
 
 //This is libraries to get native apis
@@ -84,7 +85,6 @@ class MainActivity : FlutterActivity(){
         //requesting media storage permission
          requestAudioStoragePermission()
         flEngine = flutterEngine
-
 
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
