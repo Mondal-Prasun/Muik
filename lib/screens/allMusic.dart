@@ -41,7 +41,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         musicInfo = music;
         isMusicPlaying = true;
       });
-
       await androidChannel.playSingleMusic(music.uri);
     }
   }
@@ -106,93 +105,60 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final String subDirUri = ref.read(subDirUriProvider);
-    allMusic = ref.watch(musicCacheProvider);
-
-    Widget mainContent = Stack(
-      alignment: AlignmentDirectional.center,
-      fit: StackFit.passthrough,
-      children: [
-        ListView.builder(
-          itemCount: allMusic.length,
-          itemBuilder: (context, index) {
-            return InkWell(
-              onTap: () => playMusic(allMusic[index]),
-              child: ListTile(
-                leading: Text("$index|"),
-                title: Text(allMusic[index].name),
-              ),
-            );
-          },
-        ),
-        IconButton(
-          icon: Icon(Icons.shuffle),
-          color: Colors.green,
-          onPressed: () {
-            androidChannel.toggleShuffle();
-          },
-        ),
-      ],
-    );
 
     return Scaffold(
-      appBar: AppBar(
-        elevation: 20,
-        title: Text("Now Playing: ${musicInfo.name}"),
-        backgroundColor: Colors.green,
-      ),
+      appBar: AppBar(elevation: 30),
       floatingActionButton: FloatingActionButton(
         onPressed: shuffleMusic,
 
         child: Icon(isMusicPlaying ? Icons.pause : Icons.play_arrow),
       ),
 
-      body:
-          allMusic.isEmpty
-              ? FutureBuilder(
-                future: androidChannel.loadMusicFromStorage(subDirUri),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(
-                      child: LinearProgressIndicator(color: Colors.green),
-                    );
-                  }
+      body: FutureBuilder(
+        future: androidChannel.loadMusicFromStorage(subDirUri),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: LinearProgressIndicator(color: Colors.green));
+          }
 
-                  if (snapshot.hasError) {
-                    return Center(
-                      child: Text(
-                        "Cannot load music",
-                        style: TextStyle(color: Colors.red),
-                      ),
-                    );
-                  } else if (snapshot.hasData) {
-                    final data = snapshot.data!;
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                "Cannot load music",
+                style: TextStyle(color: Colors.red),
+              ),
+            );
+          } else if (snapshot.hasData) {
+            final data = snapshot.data!;
 
-                    if (allMusic.length < data.length) {
-                      for (final audio in data) {
-                        if (audio["name"].toString().contains(
-                          RegExp(r'(\.jpg|\.png|\.jpeg)'),
-                        )) {
-                          continue;
-                        }
-                        final mName = cleanFileName(audio["name"]);
-                        allMusic.add(MusicInfo(name: mName, uri: audio["uri"]));
-                      }
-                    }
-                    if (allMusic.isNotEmpty) {
-                      ref.read(musicCacheProvider.notifier).setCache(allMusic);
-                      return mainContent;
-                    }
-                  }
+            if (allMusic.length < data.length) {
+              for (final audio in data) {
+                if (audio["name"].toString().contains(
+                  RegExp(r'(\.jpg|\.png|\.jpeg|\.txt)'),
+                )) {
+                  continue;
+                }
+                final mName = cleanFileName(audio["name"]);
+                allMusic.add(MusicInfo(name: mName, uri: audio["uri"]));
+              }
+            }
 
-                  return Center(
-                    child: Text(
-                      "Cannot load music",
-                      style: TextStyle(color: Colors.red),
-                    ),
-                  );
-                },
-              )
-              : mainContent,
+            return ListView.builder(
+              itemCount: allMusic.length,
+              itemBuilder: (context, index) {
+                return;
+              },
+            );
+          }
+
+          return Center(
+            child: Text(
+              "Cannot load music",
+              style: TextStyle(color: Colors.red),
+            ),
+          );
+        },
+      ),
     );
   }
 }
