@@ -3,11 +3,11 @@ package com.example.muik
 import android.Manifest
 import android.app.Activity
 import android.app.ComponentCaller
-import android.app.PendingIntent
+
 
 import android.content.ComponentName
 import android.content.Intent
-import android.content.SharedPreferences
+
 import io.flutter.embedding.android.FlutterActivity
 
 //This is libraries to get native apis
@@ -24,10 +24,10 @@ import androidx.core.net.toUri
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
-import androidx.media3.session.SessionCommands
+
 import androidx.media3.session.SessionToken
 import io.flutter.embedding.engine.FlutterEngine
-import io.flutter.embedding.engine.dart.DartExecutor
+
 import io.flutter.plugin.common.MethodChannel
 
 

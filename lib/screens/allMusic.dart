@@ -130,7 +130,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             );
           } else if (snapshot.hasData) {
             final data = snapshot.data!;
-
+            //print(data);
             if (allMusic.length < data.length) {
               for (final audio in data) {
                 if (audio["name"].toString().contains(
@@ -146,11 +146,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             return ListView.builder(
               itemCount: allMusic.length,
               itemBuilder: (context, index) {
-                return;
+                return ListTile(
+                  leading: Text("$index|"),
+                  title: Text(allMusic[index].name),
+                  onTap: () {
+                    playMusic(
+                      MusicInfo(
+                        name: allMusic[index].name,
+                        uri: allMusic[index].uri,
+                      ),
+                    );
+                  },
+                );
               },
             );
           }
-
+  	
           return Center(
             child: Text(
               "Cannot load music",

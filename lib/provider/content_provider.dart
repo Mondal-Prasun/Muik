@@ -1,7 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class _SubDirUriNotifier extends StateNotifier<String> {
-  _SubDirUriNotifier() : super("");
+class _SubDirUriNotifier extends Notifier<String> {
+  @override
+  String build() => "";
 
   void setSubDirUri(String subDirUri) {
     if (subDirUri.isEmpty) {
@@ -11,6 +12,6 @@ class _SubDirUriNotifier extends StateNotifier<String> {
   }
 }
 
-final subDirUriProvider = StateNotifierProvider<_SubDirUriNotifier, String>(
-  (ref) => _SubDirUriNotifier(),
+final subDirUriProvider = NotifierProvider<_SubDirUriNotifier, String>(
+  _SubDirUriNotifier.new
 );

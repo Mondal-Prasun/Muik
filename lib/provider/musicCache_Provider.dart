@@ -1,8 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:muik/channels/android_channel.dart';
 
-class _MusicCacheProvider extends StateNotifier<List<MusicInfo>> {
-  _MusicCacheProvider() : super([]);
+class _MusicCacheProvider extends Notifier<List<MusicInfo>> {
+  @override
+  List<MusicInfo> build() => [];
 
   void setCache(List<MusicInfo> list) async {
     state = list;
@@ -16,6 +17,6 @@ class _MusicCacheProvider extends StateNotifier<List<MusicInfo>> {
 }
 
 final musicCacheProvider =
-    StateNotifierProvider<_MusicCacheProvider, List<MusicInfo>>(
-      (ref) => _MusicCacheProvider(),
+    NotifierProvider<_MusicCacheProvider, List<MusicInfo>>(
+      _MusicCacheProvider.new,
     );
