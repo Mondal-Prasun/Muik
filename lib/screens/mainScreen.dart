@@ -30,8 +30,8 @@ class _MainScreen extends ConsumerState<MainScreen> {
 
   Widget content = Placeholder();
 
-  void loadAllMusic(BuildContext ctx, String subUri) {
-    ref.read(subDirUriProvider.notifier).setSubDirUri(subUri);
+  void loadAllMusic(BuildContext ctx, Subdirectory sub) {
+    ref.read(subDirUriProvider.notifier).setSubDirUri(sub);
     Navigator.push(ctx, MaterialPageRoute(builder: (ctx) => HomeScreen()));
   }
 
@@ -108,6 +108,7 @@ class _MainScreen extends ConsumerState<MainScreen> {
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                 ),
+		
                 SizedBox(
                   height: 300,
                   width: double.infinity,
@@ -119,7 +120,7 @@ class _MainScreen extends ConsumerState<MainScreen> {
                     itemSnapping: true,
                     flexWeights: [1, 3, 1],
                     onTap: (index) {
-                      loadAllMusic(context, withoutDotFile[index]["uri"]);
+                      loadAllMusic(context, Subdirectory(name:withoutDotFile[index]["name"], subDirUri: withoutDotFile[index]["uri"]));
                     },
                     children: dirTile,
                   ),
@@ -178,3 +179,4 @@ class _MainScreen extends ConsumerState<MainScreen> {
     return Scaffold(appBar: AppBar(title: Text("Main Screen")), body: content);
   }
 }
+

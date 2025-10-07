@@ -29,6 +29,7 @@ import androidx.media3.session.SessionToken
 import io.flutter.embedding.engine.FlutterEngine
 
 import io.flutter.plugin.common.MethodChannel
+import java.net.URI
 
 
 class MainActivity : FlutterActivity(){
@@ -145,6 +146,12 @@ class MainActivity : FlutterActivity(){
                 "toggleShuffleMode" ->{
                    musicLoadService.toggleShuffleMode(mediaSessionController)
                 }
+                "getAudioArt" ->{
+                    val audioUri = call.arguments<String>() as String
+                    val art = musicLoadService.getAudioThumbnail(context, audioUri.toUri())
+                    result.success(art)
+                }
+
             }
         }
 

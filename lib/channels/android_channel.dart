@@ -1,12 +1,6 @@
 import 'dart:developer';
 import 'package:flutter/services.dart';
 
-class MusicInfo {
-  MusicInfo({required this.name, required this.uri});
-  final String name;
-  final String uri;
-}
-
 class AndroidChannel {
   final _androidBackendChannel = MethodChannel("Android_Channel_Music");
 
@@ -33,6 +27,21 @@ class AndroidChannel {
     } on PlatformException catch (e) {
       log(e.message!);
       return null;
+    }
+  }
+
+  Future<Uint8List> getMusicArt(String audioUri) async {
+    try {
+      
+      final artByteArray = await _androidBackendChannel.invokeMethod(
+        "getAudioArt",
+        audioUri,
+      ) as Uint8List;
+	//print("art: $artByteArray");
+	return artByteArray;
+    } on PlatformException catch (e) {
+	log(e.message!);
+	return Uint8List.fromList([]);
     }
   }
 

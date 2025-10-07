@@ -80,6 +80,7 @@ class MusicLoadService{
         try{
             retriver.setDataSource(context,aUri)
             val thumbNail = retriver.embeddedPicture
+
             return if(thumbNail == null || thumbNail.isEmpty()){
                 null
             }else{
@@ -94,6 +95,10 @@ class MusicLoadService{
         }finally {
             retriver.release()
         }
+    }
+
+    fun audioArtwork(mediaController: MediaController?) : String?{
+        return mediaController!!.mediaMetadata.artworkUri.toString()
     }
 
     fun playSingleAudio(uriString: String, mediaController: MediaController?){

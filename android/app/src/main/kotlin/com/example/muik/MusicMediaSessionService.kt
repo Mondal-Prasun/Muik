@@ -8,6 +8,8 @@ import android.content.Intent
 
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
+import androidx.media3.common.AudioAttributes
+import androidx.media3.common.C
 import androidx.media3.common.Player
 
 import androidx.media3.common.util.UnstableApi
@@ -20,6 +22,7 @@ import androidx.media3.session.MediaSessionService
 class MusicMediaSessionService:MediaSessionService(){
     
     private var _mediaSession:MediaSession? = null
+    private var _audioAttributes: AudioAttributes? = null
     private var _player:ExoPlayer? = null
     private val mediaSession get() = _mediaSession!!
 
@@ -32,7 +35,8 @@ class MusicMediaSessionService:MediaSessionService(){
     override fun onCreate() {
         super.onCreate()
 
-        _player = ExoPlayer.Builder(this).build()
+         _audioAttributes = AudioAttributes.Builder().setUsage(C.USAGE_MEDIA).setContentType(C.AUDIO_CONTENT_TYPE_MUSIC).build()
+        _player = ExoPlayer.Builder(this).setAudioAttributes(_audioAttributes!!,true).build()
         _mediaSession = MediaSession.Builder(this,_player!!)
             .build()
 
