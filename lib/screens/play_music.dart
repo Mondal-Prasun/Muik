@@ -1,9 +1,8 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:muik/channels/android_channel.dart';
 import 'package:muik/provider/content_provider.dart';
+import 'package:muik/widgets/music_art_card.dart';
 
 class PlayMusic extends ConsumerStatefulWidget {
   const PlayMusic({super.key});
@@ -37,9 +36,9 @@ class _PlayMusicState extends ConsumerState<PlayMusic> {
                 }
                 if (snapshot.hasData) {
                   //print(snapshot.data);
-                  _MusicArtCard(size: size, audioArt: snapshot.data!);
+                  MusicArtCard(size: size, audioArt: snapshot.data!);
                 }
-                return _MusicArtCard(size: size, audioArt: snapshot.data!);
+                return MusicArtCard(size: size, audioArt: snapshot.data!);
               },
             ),
           ],
@@ -49,26 +48,6 @@ class _PlayMusicState extends ConsumerState<PlayMusic> {
   }
 }
 
-class _MusicArtCard extends StatelessWidget {
-  const _MusicArtCard({required this.size, required this.audioArt});
-  final Size size;
-  final Uint8List audioArt;
 
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Container(
-        height: 300,
-        width: 300,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(10),
-          child: Image.memory(audioArt, fit: BoxFit.contain),
-        ),
-      ),
-    );
-  }
-}
+
+
