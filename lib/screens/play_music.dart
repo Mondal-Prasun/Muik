@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:muik/channels/android_channel.dart';
 import 'package:muik/provider/content_provider.dart';
 import 'package:muik/widgets/music_art_card.dart';
+import 'package:muik/widgets/music_duration_indicator.dart';
+import 'package:muik/widgets/play_pause_widget.dart';
 
 class PlayMusic extends ConsumerStatefulWidget {
   const PlayMusic({super.key});
@@ -23,11 +25,12 @@ class _PlayMusicState extends ConsumerState<PlayMusic> {
     final Size size = MediaQuery.of(context).size;
 
     return Scaffold(
-      appBar: AppBar(title: Text(subDir.name)),
+      appBar: AppBar(title: Text(subDir.name), centerTitle: true),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            Spacer(),
             FutureBuilder(
               future: androidChannel.getMusicArt(currentMusic.uri),
               builder: (ctx, snapshot) {
@@ -41,13 +44,27 @@ class _PlayMusicState extends ConsumerState<PlayMusic> {
                 return MusicArtCard(size: size, audioArt: snapshot.data!);
               },
             ),
+            Spacer(),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              spacing: 3,
+              children: [
+                Text(
+                  "Song name",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                Text("artist name", style: TextStyle(fontSize: 11)),
+              ],
+            ),
+            Spacer(),
+            MusicDurationIndicator(size: size),
+            Spacer(),
+            PlayPauseWidget(size: size),
+            Spacer(),
           ],
         ),
       ),
     );
   }
 }
-
-
-
-

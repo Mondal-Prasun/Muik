@@ -43,22 +43,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  void pauseOrResumeMusic() async {
-    final isPlaying = await androidChannel.isMusicPlaying();
-
-    if (isPlaying) {
-      setState(() {
-        isMusicPlaying = false;
-      });
-      await androidChannel.pauseMusic();
-    } else {
-      setState(() {
-        isMusicPlaying = true;
-      });
-      await androidChannel.resumeMusic();
-    }
-  }
-
+ 
   void playListMusic() async {
     if (allMusic != []) {
       List<Map<String, String>> items = [];
@@ -83,23 +68,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return true;
   }
 
-  dynamic printIt(dynamic isIt) {
-    print("Its working: $isIt");
-  }
-
-  dynamic mediaChanged(dynamic meta) {
-    print("changed music : ${meta["name"]} | ${meta["art"]}");
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    flutterChannel.initPlatFromListners({
-      "IsKtMusicPlaying": printIt,
-      "MediaChanged": mediaChanged,
-    });
-  }
-
+ 
+  
   @override
   Widget build(BuildContext context) {
     final Subdirectory subDir = ref.read(subDirUriProvider);
