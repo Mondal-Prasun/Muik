@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:muik/channels/android_channel.dart';
+import 'package:muik/channels/flutter_channel.dart';
 import 'package:muik/provider/content_provider.dart';
 import 'package:muik/widgets/music_art_card.dart';
 import 'package:muik/widgets/music_duration_indicator.dart';
@@ -17,6 +18,35 @@ class PlayMusic extends ConsumerStatefulWidget {
 
 class _PlayMusicState extends ConsumerState<PlayMusic> {
   final androidChannel = AndroidChannel();
+  final flutterChannel = FlutterChannel();
+  bool gotMeta = false;
+
+  // late final MusicInfo currnetMusic;
+
+  dynamic mediaChanged(dynamic meta) {
+    print(
+      "changed music : ${meta["name"]} | ${meta["artist"]} | ${meta["duration"]}",
+    );
+    final info = ref.read(currentMusicProvider);
+    ref
+        .read(currentMusicProvider.notifier)
+        .setCurrnetMusic(
+          MusicInfo(name: info.name, uri: info.uri)
+            ..title = meta["name"] as String
+            ..artist = meta["artist"]
+            ..duration = meta["duration"],
+        );
+    if (!gotMeta) {
+      setState(() {});
+      gotMeta = true;
+    }
+  }
+
+  @override
+  void initState() {
+    flutterChannel.initListnersMeta({"MediaChanged": mediaChanged});
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,10 +81,10 @@ class _PlayMusicState extends ConsumerState<PlayMusic> {
               spacing: 3,
               children: [
                 Text(
-                  "Song name",
+                  currentMusic.title,
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
-                Text("artist name", style: TextStyle(fontSize: 11)),
+                Text(currentMusic.artist, style: TextStyle(fontSize: 11)),
               ],
             ),
             Spacer(),

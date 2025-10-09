@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class Subdirectory {
@@ -20,19 +21,26 @@ final subDirUriProvider = NotifierProvider<_SubDirUriNotifier, Subdirectory>(
 );
 
 class MusicInfo {
-  MusicInfo({required this.name, required this.uri});
+  MusicInfo({required this.name, required this.uri})
+    : title = "",
+      artist = "",
+      duration = "";
   final String name;
   final String uri;
+  String title;
+  String artist;
+  String duration;
 }
 
 class _CurrentMusicNotifier extends Notifier<MusicInfo> {
- @override
-   MusicInfo build() => MusicInfo(uri: "", name: "");
+  @override
+  MusicInfo build() => MusicInfo(uri: "", name: "");
 
-   void setCurrnetMusic(MusicInfo music){
-     state = music;	
-    }
-
+  void setCurrnetMusic(MusicInfo music) {
+    state = music;
+  }
 }
 
-final currentMusicProvider = NotifierProvider<_CurrentMusicNotifier, MusicInfo>(_CurrentMusicNotifier.new);
+final currentMusicProvider = NotifierProvider<_CurrentMusicNotifier, MusicInfo>(
+  _CurrentMusicNotifier.new,
+);

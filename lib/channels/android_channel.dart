@@ -32,16 +32,14 @@ class AndroidChannel {
 
   Future<Uint8List> getMusicArt(String audioUri) async {
     try {
-      
-      final artByteArray = await _androidBackendChannel.invokeMethod(
-        "getAudioArt",
-        audioUri,
-      ) as Uint8List;
-	//print("art: $artByteArray");
-	return artByteArray;
+      final artByteArray =
+          await _androidBackendChannel.invokeMethod("getAudioArt", audioUri)
+              as Uint8List;
+      //print("art: $artByteArray");
+      return artByteArray;
     } on PlatformException catch (e) {
-	log(e.message!);
-	return Uint8List.fromList([]);
+      log(e.message!);
+      return Uint8List.fromList([]);
     }
   }
 
@@ -102,6 +100,18 @@ class AndroidChannel {
       await _androidBackendChannel.invokeMethod("resumeMusic");
     } on PlatformException catch (e) {
       log(e.message!);
+    }
+  }
+
+  Future<dynamic> getMusicDetails() async {
+    try {
+      final details = await _androidBackendChannel.invokeMethod(
+        "getAudioDetails",
+      );
+      return details;
+    } on PlatformException catch (e) {
+      log(e.message!);
+      return {};
     }
   }
 }

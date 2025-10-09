@@ -29,13 +29,25 @@ import androidx.media3.session.SessionToken
 import io.flutter.embedding.engine.FlutterEngine
 
 import io.flutter.plugin.common.MethodChannel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.net.URI
 
 
 class MainActivity : FlutterActivity(){
     companion object{
         private const val DART_CHANNEL = "Android_Channel_Music"
-        private const val FLUTTER_CHANNEL = "Flutter_Channel_Music"
+        private const val FLUTTER_CHANNEL_FOR_PLAY = "Flutter_Channel_Music/Play"
+        private const val FLUTTER_CHANNEL_FOR_META = "Flutter_Channel_Music/Meta"
+        private const val FLUTTER_CHANNEL_FOR_DU = "Flutter_Channel_Music/Du"
+
         private const val READ_MUSIC_REQUEST_CODE = 101
         private const val REQUEST_CODE_OPEN_DIRECTORY = 42
         private var mediaSessionController:MediaController?= null
@@ -47,6 +59,7 @@ class MainActivity : FlutterActivity(){
 
     private var flEngine : FlutterEngine? = null
 
+    private var kJob : Job? = null
 
 
 
@@ -63,18 +76,51 @@ class MainActivity : FlutterActivity(){
             ContextCompat.getMainExecutor(this@MainActivity)
         )
 
-        val flChannel = MethodChannel(flEngine!!.dartExecutor.binaryMessenger, FLUTTER_CHANNEL)
+        val flChannelPlay = MethodChannel(flEngine!!.dartExecutor.binaryMessenger, FLUTTER_CHANNEL_FOR_PLAY)
+        val flChannelMeta = MethodChannel(flEngine!!.dartExecutor.binaryMessenger, FLUTTER_CHANNEL_FOR_META)
+        val flChannelDu = MethodChannel(flEngine!!.dartExecutor.binaryMessenger, FLUTTER_CHANNEL_FOR_DU)
 
         mediaSessionController?.addListener(object : Player.Listener{
             override fun onIsPlayingChanged(isPlaying: Boolean) {
-                flChannel.invokeMethod("IsKtMusicPlaying",isPlaying)
+                flChannelPlay.invokeMethod("IsKtMusicPlaying",isPlaying)
+                kJob?.cancel()
+                kJob = CoroutineScope(Dispatchers.Main).launch {
+                    while(isActive) {
+                        Log.d(
+                            "Music",
+                            "currentPosition: ${mediaSessionController!!.currentPosition}"
+                        )
+                        flChannelDu.invokeMethod("GetCurrentDuPos", mediaSessionController!!.currentPosition.toString())
+                        delay(1000)
+                    }
+                }
+                if(!isPlaying){
+                    kJob?.cancel("Not Playing the music")
+                }
+            }
+
+            override fun onIsLoadingChanged(isLoading: Boolean) {
+//                Log.d("Music","has loaded: $isLoading .........................................................................................")
+               if(!isLoading){
+//                   Log.d("Music", "du: ${mediaSessionController!!.duration}")
+                   flChannelMeta.invokeMethod("MediaChanged", mapOf<String,String>(
+                       "name" to mediaSessionController!!.mediaMetadata.title.toString(),
+                       "artist" to mediaSessionController!!.mediaMetadata.artist.toString(),
+                       "duration" to mediaSessionController!!.duration.toString()
+                   ))
+               }
             }
 
             override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
-                 flChannel.invokeMethod("MediaChanged", mapOf<String,String>(
-                     "name" to mediaMetadata.title.toString(),
-                     "art" to mediaMetadata.artist.toString()
-                     ))
+//                 flChannel.invokeMethod("MediaChanged", mapOf<String,String>(
+//                     "name" to mediaMetadata.title.toString(),
+//                     "artist" to mediaMetadata.artist.toString(),
+//                     "duration" to mediaSessionController!!.duration.toString()
+//                     ))
+            }
+
+            override fun onEvents(player: Player, events: Player.Events) {
+
             }
         })
     }
@@ -102,12 +148,14 @@ class MainActivity : FlutterActivity(){
 
                         val subDirUri = subDirUriString.toUri()
                          try{
-                             Thread{
-                                 val allContent = folderLoad.loadContentFromDirectories(this, subDirUri)
-                                 Looper.getMainLooper().run {
+                             kJob?.cancel()
+                             kJob = CoroutineScope(Dispatchers.IO).launch {
+                                 val allContent = folderLoad.loadContentFromDirectories(applicationContext, subDirUri)
+                                 withContext(Dispatchers.Main) {
                                      result.success(allContent)
                                  }
-                             }.start()
+                                 this.cancel()
+                             }
                          }catch (e:Exception){
                              result.error("ERROR URI","Sub dir string is null : ${e.message}",null)
                          }

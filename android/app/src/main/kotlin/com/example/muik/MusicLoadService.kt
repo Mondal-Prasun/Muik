@@ -2,6 +2,7 @@ package com.example.muik
 
 
 
+import android.R
 import android.content.Context
 import android.media.MediaMetadataRetriever
 
@@ -9,6 +10,7 @@ import android.net.Uri
 import android.util.Log
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 
 
@@ -97,9 +99,6 @@ class MusicLoadService{
         }
     }
 
-    fun audioArtwork(mediaController: MediaController?) : String?{
-        return mediaController!!.mediaMetadata.artworkUri.toString()
-    }
 
     fun playSingleAudio(uriString: String, mediaController: MediaController?){
         try{
@@ -111,6 +110,8 @@ class MusicLoadService{
             Log.d("MusicLoadService","Cannot play music:${e.message}")
         }
     }
+
+
 
 
     fun playListAudio(audioList : List<Map<String,String>>, mediaController: MediaController?){

@@ -44,16 +44,12 @@ class _PlayPauseState extends ConsumerState<PlayPauseWidget> {
     });
   }
 
-  dynamic mediaChanged(dynamic meta) {
-    print("changed music : ${meta["name"]} | ${meta["art"]}");
-  }
-
   @override
   void initState() {
     super.initState();
-    flutterChannel.initPlatFromListners({
+    flutterChannel.initListnersPlay({
       "IsKtMusicPlaying": mediaPausedOrResumeNotification,
-      "MediaChanged": mediaChanged,
+      // "MediaChanged": mediaChanged,
     });
   }
 

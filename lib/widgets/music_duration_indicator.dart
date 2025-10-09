@@ -3,6 +3,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:muik/channels/flutter_channel.dart';
+import 'package:muik/provider/content_provider.dart';
 
 class MusicDurationIndicator extends ConsumerStatefulWidget {
   const MusicDurationIndicator({super.key, required this.size});
@@ -19,28 +21,63 @@ class _MusicDuarationIndicator extends ConsumerState<MusicDurationIndicator> {
   List<double> randHeightList = [];
   List<Widget> indiCators = [];
   int indicatorCount = 0;
-  int refreshCounter = 0;
+  Timer? t;
+  double audioDuration = 0;
+  final flutterChannel = FlutterChannel();
 
-  void startTimer() {
-    Timer.periodic(Duration(seconds: 1), (t) {
-      setState(() {
-        if (t.tick < indicatorCount) {
-          indiCators[t.tick] = _IndicatorLines(
-            height: randHeightList[t.tick],
-            width: 2.0,
-            color: Colors.black,
-          );
-        }
-      });
+  int updateDuMin = 0;
+  int updateDuSec = 00;
+
+  int indCount = 0;
+  double updatedOffset = 0;
+
+  dynamic getCurrentPos(dynamic pos) {
+    double posOffset = audioDuration / indicatorCount;
+    // print("...............flutter audio pos: $pos");
+    final double cDu = double.parse(pos.toString());
+
+    final int duInMinute = ((cDu / 1000) / 60).floor().toInt();
+    final int duInSeconds = ((cDu % (60 * 1000)) / 1000).toInt();
+    setState(() {
+      updateDuMin = duInMinute;
+      updateDuSec = duInSeconds;
+
+      // print("cdu........................:$cDu");
+      // print("updatedOffset..............:$updatedOffset");
+      // print("indCount..............................:$indCount");
+
+      if (cDu > updatedOffset) {
+        // print("going here");
+        indiCators[indCount] = _IndicatorLines(
+          height: randHeightList[indCount],
+          width: 2.0,
+          color: Colors.black,
+        );
+
+        indCount = indCount + 1;
+        updatedOffset = posOffset * indCount;
+      }
     });
   }
 
   @override
+  void initState() {
+    flutterChannel.initListnersDu({"GetCurrentDuPos": getCurrentPos});
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    refreshCounter++;
-    if (refreshCounter < 2) {
-      startTimer();
+    final MusicInfo currentMusic = ref.read(currentMusicProvider);
+    if (currentMusic.duration != "") {
+      audioDuration = double.parse(currentMusic.duration);
     }
+
     final double height = widget.size.height / 10;
     final double width = widget.size.width - 50;
     final double indicatorWidth = 2;
@@ -66,6 +103,9 @@ class _MusicDuarationIndicator extends ConsumerState<MusicDurationIndicator> {
       }
     }
 
+    final int duInMinute = ((audioDuration / 1000) / 60).floor().toInt();
+    final int duInSeconds = ((audioDuration % (60 * 1000)) / 1000).toInt();
+
     return Column(
       children: [
         Container(
@@ -77,7 +117,13 @@ class _MusicDuarationIndicator extends ConsumerState<MusicDurationIndicator> {
         ),
         SizedBox(
           width: width,
-          child: Row(children: [Text("0:00"), Spacer(), Text("0:00")]),
+          child: Row(
+            children: [
+              Text("$updateDuMin:$updateDuSec"),
+              Spacer(),
+              Text("$duInMinute:$duInSeconds"),
+            ],
+          ),
         ),
       ],
     );
@@ -105,10 +151,12 @@ class _IndicatorState extends State<_IndicatorLines>
     with SingleTickerProviderStateMixin {
   final Duration d = Duration(milliseconds: 2000);
   bool doing = false;
+  Timer? t1;
+  Timer? t2;
 
   void startAnimation() {
-    Timer(Duration(milliseconds: Random().nextInt(5000)), () {
-      Timer.periodic(d, (t) {
+    t2 = Timer(Duration(milliseconds: Random().nextInt(5000)), () {
+      t1 = Timer.periodic(d, (t) {
         setState(() {
           doing = !doing;
         });
@@ -120,6 +168,13 @@ class _IndicatorState extends State<_IndicatorLines>
   void initState() {
     startAnimation();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    t1!.cancel();
+    t2!.cancel();
+    super.dispose();
   }
 
   @override

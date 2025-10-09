@@ -43,7 +43,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
- 
   void playListMusic() async {
     if (allMusic != []) {
       List<Map<String, String>> items = [];
@@ -68,8 +67,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return true;
   }
 
- 
-  
   @override
   Widget build(BuildContext context) {
     final Subdirectory subDir = ref.read(subDirUriProvider);
