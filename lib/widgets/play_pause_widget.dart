@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:muik/channels/android_channel.dart';
 import 'package:muik/channels/flutter_channel.dart';
+import 'package:muik/provider/content_provider.dart';
+import 'package:muik/screens/play_music.dart';
 
 class PlayPauseWidget extends ConsumerStatefulWidget {
-  const PlayPauseWidget({super.key, required this.size});
+  const PlayPauseWidget({super.key, required this.size, required this.playMusicContext});
   final Size size;
+  final BuildContext playMusicContext;
   @override
   ConsumerState<PlayPauseWidget> createState() {
     return _PlayPauseState();
@@ -18,7 +21,6 @@ class _PlayPauseState extends ConsumerState<PlayPauseWidget> {
   bool isMusicPlaying = true;
 
   final androidChannel = AndroidChannel();
-  final flutterChannel = FlutterChannel();
 
   void pauseOrResumeMusic() async {
     final isPlaying = await androidChannel.isMusicPlaying();
@@ -36,27 +38,12 @@ class _PlayPauseState extends ConsumerState<PlayPauseWidget> {
     }
   }
 
-  dynamic mediaPausedOrResumeNotification(dynamic isPlay) {
-    print("Its working: $isPlay");
-
-    setState(() {
-      isMusicPlaying = isPlay as bool;
-    });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    flutterChannel.initListnersPlay({
-      "IsKtMusicPlaying": mediaPausedOrResumeNotification,
-      // "MediaChanged": mediaChanged,
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     boxHeight = widget.size.height / 8;
     boxWidth = widget.size.width - 50;
+
+    isMusicPlaying = ref.watch(isLandMusicPlayingProvider);
 
     return Container(
       height: boxHeight,
@@ -109,6 +96,15 @@ class _PlayPauseState extends ConsumerState<PlayPauseWidget> {
             decoration: BoxDecoration(
               color: Colors.deepOrange,
               borderRadius: BorderRadius.circular(50),
+            ),
+            child: IconButton(
+              onPressed: () async {
+                final isChanged = await androidChannel.nextMusic();
+		if(isChanged){
+		  Navigator.of(widget.playMusicContext).pushReplacement(MaterialPageRoute(builder: (_)=> PlayMusic())); 
+		}
+              },
+              icon: Icon(Icons.fork_right_rounded),
             ),
           ),
         ],

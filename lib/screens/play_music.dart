@@ -19,39 +19,11 @@ class PlayMusic extends ConsumerStatefulWidget {
 class _PlayMusicState extends ConsumerState<PlayMusic> {
   final androidChannel = AndroidChannel();
   final flutterChannel = FlutterChannel();
-  bool gotMeta = false;
-
-  // late final MusicInfo currnetMusic;
-
-  dynamic mediaChanged(dynamic meta) {
-    print(
-      "changed music : ${meta["name"]} | ${meta["artist"]} | ${meta["duration"]}",
-    );
-    final info = ref.read(currentMusicProvider);
-    ref
-        .read(currentMusicProvider.notifier)
-        .setCurrnetMusic(
-          MusicInfo(name: info.name, uri: info.uri)
-            ..title = meta["name"] as String
-            ..artist = meta["artist"]
-            ..duration = meta["duration"],
-        );
-    if (!gotMeta) {
-      setState(() {});
-      gotMeta = true;
-    }
-  }
-
-  @override
-  void initState() {
-    flutterChannel.initListnersMeta({"MediaChanged": mediaChanged});
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
     final Subdirectory subDir = ref.read(subDirUriProvider);
-    final MusicInfo currentMusic = ref.read(currentMusicProvider);
+    final MusicInfo currentMusic = ref.watch(currentMusicProvider);
     final Size size = MediaQuery.of(context).size;
 
     return Scaffold(
@@ -61,19 +33,7 @@ class _PlayMusicState extends ConsumerState<PlayMusic> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Spacer(),
-            FutureBuilder(
-              future: androidChannel.getMusicArt(currentMusic.uri),
-              builder: (ctx, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return CircularProgressIndicator();
-                }
-                if (snapshot.hasData) {
-                  //print(snapshot.data);
-                  MusicArtCard(size: size, audioArt: snapshot.data!);
-                }
-                return MusicArtCard(size: size, audioArt: snapshot.data!);
-              },
-            ),
+            MusicArtCard(),
             Spacer(),
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -81,16 +41,19 @@ class _PlayMusicState extends ConsumerState<PlayMusic> {
               spacing: 3,
               children: [
                 Text(
-                  currentMusic.title,
+                  currentMusic.title ?? "Unknown",
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
-                Text(currentMusic.artist, style: TextStyle(fontSize: 11)),
+                Text(
+                  currentMusic.artist ?? "UnKnown",
+                  style: TextStyle(fontSize: 11),
+                ),
               ],
             ),
             Spacer(),
             MusicDurationIndicator(size: size),
             Spacer(),
-            PlayPauseWidget(size: size),
+            PlayPauseWidget(size: size, playMusicContext: context,),
             Spacer(),
           ],
         ),

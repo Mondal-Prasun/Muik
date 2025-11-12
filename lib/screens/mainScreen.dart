@@ -24,22 +24,31 @@ class _MainScreen extends ConsumerState<MainScreen> {
     if (dirs != null) {
       setState(() {
         subDirs = dirs;
+        gotFolders = true;
       });
     }
   }
 
   Widget content = Placeholder();
 
+  int currentIndex = 0;
+
+  bool gotFolders = false;
+
+  bool showMusic = false;
+
   void loadAllMusic(BuildContext ctx, Subdirectory sub) {
     ref.read(subDirUriProvider.notifier).setSubDirUri(sub);
-    Navigator.push(ctx, MaterialPageRoute(builder: (ctx) => HomeScreen()));
+    setState(() {
+      showMusic = true;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
 
-    if (subDirs.isEmpty) {
+    if (subDirs.isEmpty && !showMusic) {
       content = Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -51,7 +60,7 @@ class _MainScreen extends ConsumerState<MainScreen> {
           ],
         ),
       );
-    } else {
+    } else if (!showMusic) {
       final List withoutDotFile = [];
       final rand = Random();
 
@@ -108,7 +117,7 @@ class _MainScreen extends ConsumerState<MainScreen> {
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                 ),
-		
+
                 SizedBox(
                   height: 300,
                   width: double.infinity,
@@ -120,7 +129,13 @@ class _MainScreen extends ConsumerState<MainScreen> {
                     itemSnapping: true,
                     flexWeights: [1, 3, 1],
                     onTap: (index) {
-                      loadAllMusic(context, Subdirectory(name:withoutDotFile[index]["name"], subDirUri: withoutDotFile[index]["uri"]));
+                      loadAllMusic(
+                        context,
+                        Subdirectory(
+                          name: withoutDotFile[index]["name"],
+                          subDirUri: withoutDotFile[index]["uri"],
+                        ),
+                      );
                     },
                     children: dirTile,
                   ),
@@ -174,9 +189,54 @@ class _MainScreen extends ConsumerState<MainScreen> {
           ),
         ],
       );
+    } else {
+      content = HomeScreen();
     }
 
-    return Scaffold(appBar: AppBar(title: Text("Main Screen")), body: content);
+    List<BottomNavigationBarItem> items = [
+      BottomNavigationBarItem(
+        icon: Icon(
+          currentIndex == 0
+              ? Icons.music_note_rounded
+              : Icons.music_note_outlined,
+        ),
+        label: "Music",
+      ),
+      BottomNavigationBarItem(
+        icon: Icon(
+          currentIndex == 1
+              ? Icons.favorite_rounded
+              : Icons.favorite_border_rounded,
+        ),
+        label: "Favorite",
+      ),
+    ];
+
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (canPop, res) {
+        if (canPop == false) {
+          setState(() {
+            showMusic = false;
+          });
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(title: Text("Main Screen")),
+        bottomNavigationBar: Visibility(
+          visible: gotFolders,
+          child: BottomNavigationBar(
+            currentIndex: currentIndex,
+            onTap: (value) {
+              setState(() {
+                currentIndex = value;
+              });
+            },
+            items: [...items],
+          ),
+        ),
+        body: content,
+      ),
+    );
   }
 }
-

@@ -17,10 +17,13 @@ class MusicDurationIndicator extends ConsumerStatefulWidget {
 }
 
 class _MusicDuarationIndicator extends ConsumerState<MusicDurationIndicator> {
+  MusicInfo cUi = MusicInfo(uri: "", name: "");
   final rand = Random();
   List<double> randHeightList = [];
   List<Widget> indiCators = [];
   int indicatorCount = 0;
+
+  final double indicatorWidth = 2;
   Timer? t;
   double audioDuration = 0;
   final flutterChannel = FlutterChannel();
@@ -30,6 +33,8 @@ class _MusicDuarationIndicator extends ConsumerState<MusicDurationIndicator> {
 
   int indCount = 0;
   double updatedOffset = 0;
+
+  double prevDu = 0;
 
   dynamic getCurrentPos(dynamic pos) {
     double posOffset = audioDuration / indicatorCount;
@@ -42,21 +47,54 @@ class _MusicDuarationIndicator extends ConsumerState<MusicDurationIndicator> {
       updateDuMin = duInMinute;
       updateDuSec = duInSeconds;
 
-      // print("cdu........................:$cDu");
-      // print("updatedOffset..............:$updatedOffset");
-      // print("indCount..............................:$indCount");
+      int neededIndCount = (cDu / posOffset).floor();
 
-      if (cDu > updatedOffset) {
-        // print("going here");
-        indiCators[indCount] = _IndicatorLines(
-          height: randHeightList[indCount],
-          width: 2.0,
-          color: Colors.black,
-        );
+      if (cDu < prevDu) {
+        print("yep its small ................................");
+        for (int i = 0; i <= neededIndCount; i++) {
+	indCount = i;
+          indiCators[indCount] = _IndicatorLines(
+            height: randHeightList[indCount],
+            width: indicatorWidth,
+            color: Colors.black,
+          );
 
-        indCount = indCount + 1;
-        updatedOffset = posOffset * indCount;
+          updatedOffset = posOffset * indCount;
+        }
+        for (int i = neededIndCount + 1; i <= indicatorCount; i++) {
+          indiCators[indCount] = _IndicatorLines(
+            height: randHeightList[indCount],
+            width: indicatorWidth,
+            color: Colors.white,
+          );
+        }
       }
+
+      if (neededIndCount > indCount) {
+        for (int i = 0; i <= neededIndCount; i++) {
+          indiCators[indCount] = _IndicatorLines(
+            height: randHeightList[indCount],
+            width: indicatorWidth,
+            color: Colors.black,
+          );
+
+          indCount = i;
+          updatedOffset = posOffset * indCount;
+        }
+      } else {
+        if (cDu > updatedOffset) {
+          // print("going here");
+          indiCators[indCount] = _IndicatorLines(
+            height: randHeightList[indCount],
+            width: indicatorWidth,
+            color: Colors.black,
+          );
+
+          indCount = indCount + 1;
+          updatedOffset = posOffset * indCount;
+        }
+      }
+      prevDu = cDu;
     });
   }
 
@@ -73,14 +111,13 @@ class _MusicDuarationIndicator extends ConsumerState<MusicDurationIndicator> {
 
   @override
   Widget build(BuildContext context) {
-    final MusicInfo currentMusic = ref.read(currentMusicProvider);
-    if (currentMusic.duration != "") {
-      audioDuration = double.parse(currentMusic.duration);
+    final MusicInfo currentMusic = ref.watch(currentMusicProvider);
+    if (currentMusic.duration != null) {
+      audioDuration = double.parse(currentMusic.duration!);
     }
 
     final double height = widget.size.height / 10;
     final double width = widget.size.width - 50;
-    final double indicatorWidth = 2;
     indicatorCount = ((width - 190) / indicatorWidth).toInt();
 
     if (randHeightList.isEmpty) {

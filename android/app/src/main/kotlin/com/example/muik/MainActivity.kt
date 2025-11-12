@@ -100,9 +100,8 @@ class MainActivity : FlutterActivity(){
             }
 
             override fun onIsLoadingChanged(isLoading: Boolean) {
-//                Log.d("Music","has loaded: $isLoading .........................................................................................")
+                Log.d("Music","has loaded: $isLoading .........................................................................................")
                if(!isLoading){
-//                   Log.d("Music", "du: ${mediaSessionController!!.duration}")
                    flChannelMeta.invokeMethod("MediaChanged", mapOf<String,String>(
                        "name" to mediaSessionController!!.mediaMetadata.title.toString(),
                        "artist" to mediaSessionController!!.mediaMetadata.artist.toString(),
@@ -112,9 +111,9 @@ class MainActivity : FlutterActivity(){
             }
 
             override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
-//                 flChannel.invokeMethod("MediaChanged", mapOf<String,String>(
-//                     "name" to mediaMetadata.title.toString(),
-//                     "artist" to mediaMetadata.artist.toString(),
+//                 flChannelMeta.invokeMethod("MediaChanged", mapOf<String,String>(
+//                     "name" to mediaSessionController!!.mediaMetadata.title.toString(),
+//                     "artist" to mediaSessionController!!.mediaMetadata.artist.toString(),
 //                     "duration" to mediaSessionController!!.duration.toString()
 //                     ))
             }
@@ -164,7 +163,7 @@ class MainActivity : FlutterActivity(){
                 "startSingleMusic" ->{
                     val sUri:String? = call.arguments<String>()
                     if(sUri!= null) {
-                        musicLoadService.playSingleAudio(sUri, mediaSessionController)
+                        musicLoadService.playSingleAudio(context,sUri, mediaSessionController)
                     }
                 }
 
@@ -188,16 +187,21 @@ class MainActivity : FlutterActivity(){
                 "shuffleMusic" ->{
                     val audioUriStrings = call.arguments<List<Map<String,String>>>() as List<Map<String,String>>
                     if(audioUriStrings.isNotEmpty()){
-                        musicLoadService.shuffleMusic(audioUriStrings, mediaSessionController)
+                        musicLoadService.shuffleMusic(context,audioUriStrings, mediaSessionController)
                     }
                 }
                 "toggleShuffleMode" ->{
                    musicLoadService.toggleShuffleMode(mediaSessionController)
                 }
                 "getAudioArt" ->{
-                    val audioUri = call.arguments<String>() as String
-                    val art = musicLoadService.getAudioThumbnail(context, audioUri.toUri())
+                    val art = mediaSessionController!!.mediaMetadata.artworkData
                     result.success(art)
+                }
+                "nextMusic" ->{
+                    val res = musicLoadService.nextAudio(
+                        mediaSessionController
+                    )
+                    result.success(res)
                 }
 
             }

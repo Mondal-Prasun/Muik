@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:muik/channels/android_channel.dart';
 import 'package:muik/channels/flutter_channel.dart';
 import 'package:muik/provider/content_provider.dart';
-import 'package:muik/provider/musicCache_Provider.dart';
 import 'package:muik/screens/play_music.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -24,7 +24,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   final flutterChannel = FlutterChannel();
 
   bool isMusicPlaying = false;
-
   bool isLoaded = false;
 
   String cleanFileName(String input) {
@@ -70,11 +69,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final Subdirectory subDir = ref.read(subDirUriProvider);
-
     return Scaffold(
-      appBar: AppBar(elevation: 30),
       floatingActionButton: FloatingActionButton(
-        onPressed: shuffleMusic,
+        onPressed: () {
+          shuffleMusic();
+          Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (_) => PlayMusic()));
+        },
 
         child: Icon(
           Icons.shuffle_rounded,
@@ -130,6 +132,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 uri: allMusic[index].uri,
                               ),
                             );
+
                             Navigator.of(context).push(
                               MaterialPageRoute(builder: (_) => PlayMusic()),
                             );
@@ -161,6 +164,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           uri: allMusic[index].uri,
                         ),
                       );
+
                       Navigator.of(
                         context,
                       ).push(MaterialPageRoute(builder: (_) => PlayMusic()));

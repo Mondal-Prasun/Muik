@@ -8,34 +8,30 @@ class FlutterChannel {
   //enter map of [methods] and its name as [string]
   void initListnersPlay(Map<String, Function(dynamic)> namedMethods) {
     _flChannelPlay.setMethodCallHandler((call) async {
-      print("kt methods: ${call.method}");
-      for (final m in namedMethods.entries) {
-        if (call.method == m.key) {
-          m.value(call.arguments);
-        }
+      if (namedMethods[call.method] == null) {
+        throw "method does not exsist in native side";
       }
+      namedMethods[call.method]!(call.arguments);
     });
   }
 
   void initListnersMeta(Map<String, Function(dynamic)> namedMethods) {
     _flChannelMeta.setMethodCallHandler((call) async {
-      print("kt methods: ${call.method}");
-      for (final m in namedMethods.entries) {
-        if (call.method == m.key) {
-          m.value(call.arguments);
-        }
+
+      if (namedMethods[call.method] == null) {
+        throw "method does not exsist in native side";
       }
+      namedMethods[call.method]!(call.arguments);
     });
   }
 
   void initListnersDu(Map<String, Function(dynamic)> namedMethods) {
     _flChannelDu.setMethodCallHandler((call) async {
-      print("kt methods: ${call.method}");
-      for (final m in namedMethods.entries) {
-        if (call.method == m.key) {
-          m.value(call.arguments);
-        }
+
+      if (namedMethods[call.method] == null) {
+        throw "method does not exsist in native side";
       }
+      namedMethods[call.method]!(call.arguments);
     });
   }
 }

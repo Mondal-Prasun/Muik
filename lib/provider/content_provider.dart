@@ -1,5 +1,6 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 
 class Subdirectory {
   Subdirectory({required this.name, required this.subDirUri});
@@ -22,14 +23,18 @@ final subDirUriProvider = NotifierProvider<_SubDirUriNotifier, Subdirectory>(
 
 class MusicInfo {
   MusicInfo({required this.name, required this.uri})
-    : title = "",
-      artist = "",
-      duration = "";
+    : uuid = Uuid().v4(),
+      title = null,
+      artist = null,
+      duration = null,
+      art = null;
+  String uuid;
   final String name;
   final String uri;
-  String title;
-  String artist;
-  String duration;
+  String? title;
+  String? artist;
+  String? duration;
+  Uint8List? art;
 }
 
 class _CurrentMusicNotifier extends Notifier<MusicInfo> {
@@ -39,8 +44,26 @@ class _CurrentMusicNotifier extends Notifier<MusicInfo> {
   void setCurrnetMusic(MusicInfo music) {
     state = music;
   }
+
+  void setCurrntMusicArt(Uint8List artByte) {
+    state.art = artByte;
+  }
 }
 
 final currentMusicProvider = NotifierProvider<_CurrentMusicNotifier, MusicInfo>(
   _CurrentMusicNotifier.new,
 );
+
+class _IslandMusicPlayingNotifer extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void set(bool isPLaying) {
+    state = isPLaying;
+  }
+}
+
+final isLandMusicPlayingProvider =
+    NotifierProvider<_IslandMusicPlayingNotifer, bool>(
+      _IslandMusicPlayingNotifer.new,
+    );

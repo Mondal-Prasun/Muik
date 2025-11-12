@@ -114,4 +114,14 @@ class AndroidChannel {
       return {};
     }
   }
+
+  Future<bool> nextMusic() async {
+    try {
+      final bool isChanged = await _androidBackendChannel.invokeMethod("nextMusic") as bool;
+	return isChanged;
+    } on PlatformException catch (e) {
+      log(e.message!);
+       return false;
+    }
+  }
 }
