@@ -1,5 +1,4 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:muik/channels/android_channel.dart';
@@ -105,7 +104,6 @@ class _MainScreen extends ConsumerState<MainScreen> {
         children: [
           SizedBox(
             height: size.height / 2 - 100,
-
             child: Stack(
               alignment: Alignment.centerLeft,
               children: [
@@ -117,7 +115,6 @@ class _MainScreen extends ConsumerState<MainScreen> {
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                 ),
-
                 SizedBox(
                   height: 300,
                   width: double.infinity,
@@ -222,7 +219,7 @@ class _MainScreen extends ConsumerState<MainScreen> {
         }
       },
       child: Scaffold(
-        appBar: AppBar(title: Text("Main Screen")),
+        appBar: AppBar(title: _CustomSearchBar()),
         bottomNavigationBar: Visibility(
           visible: gotFolders,
           child: BottomNavigationBar(
@@ -238,5 +235,41 @@ class _MainScreen extends ConsumerState<MainScreen> {
         body: content,
       ),
     );
+  }
+}
+
+class _CustomSearchBar extends ConsumerStatefulWidget {
+  const _CustomSearchBar();
+  @override
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _CustomSearchBarState();
+}
+
+class _CustomSearchBarState extends ConsumerState<_CustomSearchBar> {
+  bool isTapped = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+        onTap: () {
+          setState(() {
+            isTapped = !isTapped;
+          });
+        },
+        child: AnimatedContainer(
+          width: isTapped == false ? 40 : 300,
+          duration: Duration(milliseconds: 1000),
+          child: SearchBar(
+	   onTap: (){
+	     setState(() {
+	     	isTapped = !isTapped;
+	    });				
+	   },
+            onChanged: (value) {
+              final audio = ref.read(allMusicProvider.notifier).searchAudio(value);
+		ref.read(searchedMusicProvider.notifier).setAudio(audio.first);
+            },
+          ),
+        ));
   }
 }

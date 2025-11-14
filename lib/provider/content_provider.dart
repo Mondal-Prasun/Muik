@@ -23,11 +23,11 @@ final subDirUriProvider = NotifierProvider<_SubDirUriNotifier, Subdirectory>(
 
 class MusicInfo {
   MusicInfo({required this.name, required this.uri})
-    : uuid = Uuid().v4(),
-      title = null,
-      artist = null,
-      duration = null,
-      art = null;
+      : uuid = Uuid().v4(),
+        title = null,
+        artist = null,
+        duration = null,
+        art = null;
   String uuid;
   final String name;
   final String uri;
@@ -65,5 +65,49 @@ class _IslandMusicPlayingNotifer extends Notifier<bool> {
 
 final isLandMusicPlayingProvider =
     NotifierProvider<_IslandMusicPlayingNotifer, bool>(
-      _IslandMusicPlayingNotifer.new,
-    );
+  _IslandMusicPlayingNotifer.new,
+);
+
+class _AllMusicListNotifier extends Notifier<Map<String, List<MusicInfo>>> {
+  @override
+  Map<String, List<MusicInfo>> build() => {
+        "": [],
+      };
+
+  void setAll(List<MusicInfo> audioList, String subDirUri) {
+    state = {
+      subDirUri: audioList,
+    };
+  }
+
+  List<MusicInfo> searchAudio(String value) {
+    if (state.values.first.isNotEmpty) {
+      return [...state.values.first.where((info) => info.name.toLowerCase().contains(value))];
+    } else {
+      return [
+        MusicInfo(uri:"", name:""),
+      ];
+    }
+  }
+
+  void reset() {
+    state = {};
+  }
+}
+
+final allMusicProvider =
+    NotifierProvider<_AllMusicListNotifier, Map<String, List<MusicInfo>>>(
+        _AllMusicListNotifier.new);
+
+class _SearchedAudioNotifier extends Notifier<MusicInfo> {
+  @override
+  MusicInfo build() => MusicInfo(uri: "", name: "");
+
+  void setAudio(MusicInfo audio) {
+    state = audio;
+  }
+}
+
+final searchedMusicProvider =
+    NotifierProvider<_SearchedAudioNotifier, MusicInfo>(
+        _SearchedAudioNotifier.new);

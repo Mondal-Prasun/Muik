@@ -7,6 +7,7 @@ import android.app.ComponentCaller
 
 import android.content.ComponentName
 import android.content.Intent
+import android.content.SharedPreferences
 
 import io.flutter.embedding.android.FlutterActivity
 
@@ -99,14 +100,18 @@ class MainActivity : FlutterActivity(){
                 }
             }
 
+            var currentMediaId: String? = null
+
             override fun onIsLoadingChanged(isLoading: Boolean) {
                 Log.d("Music","has loaded: $isLoading .........................................................................................")
-               if(!isLoading){
+
+                if(!isLoading ){
+                    if(currentMediaId== null ||  mediaSessionController!!.currentMediaItem?.mediaId != currentMediaId){
                    flChannelMeta.invokeMethod("MediaChanged", mapOf<String,String>(
                        "name" to mediaSessionController!!.mediaMetadata.title.toString(),
                        "artist" to mediaSessionController!!.mediaMetadata.artist.toString(),
                        "duration" to mediaSessionController!!.duration.toString()
-                   ))
+                   ))}
                }
             }
 
@@ -159,6 +164,19 @@ class MainActivity : FlutterActivity(){
                              result.error("ERROR URI","Sub dir string is null : ${e.message}",null)
                          }
                 }
+
+                "setSharePref" ->{
+
+
+
+                }
+
+                "getSharePref" ->{
+
+
+                }
+
+
 
                 "startSingleMusic" ->{
                     val sUri:String? = call.arguments<String>()
@@ -262,16 +280,3 @@ class MainActivity : FlutterActivity(){
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:muik/channels/android_channel.dart';
 import 'package:muik/channels/flutter_channel.dart';
@@ -25,6 +24,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   bool isMusicPlaying = false;
   bool isLoaded = false;
+
+  final ScrollController scrollController = ScrollController();
+  double listTileHeight = 60;
+
+  late Subdirectory subDir;
 
   String cleanFileName(String input) {
     final regex = RegExp(
@@ -62,13 +66,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  Future<bool> working(String test) async {
-    return true;
+  void saveData() async {
+    await Future(() {
+      ref.read(allMusicProvider.notifier).setAll(allMusic, subDir.subDirUri);
+    });
+  }
+
+  @override
+  void initState() {
+    subDir = ref.read(subDirUriProvider);
+    final audioListMap = ref.read(allMusicProvider);
+
+    if (audioListMap.keys.first == subDir.subDirUri) {
+      allMusic = audioListMap.values.first;
+    }
+   
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     final Subdirectory subDir = ref.read(subDirUriProvider);
+    final MusicInfo audio = ref.watch(searchedMusicProvider);
+
+    scrollController.animateTo(
+      listTileHeight * allMusic.indexWhere((info) => info.name == audio.name),
+      duration: Duration(milliseconds: 300),
+      curve: Curves.ease,
+    );
+
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -77,101 +103,104 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             context,
           ).push(MaterialPageRoute(builder: (_) => PlayMusic()));
         },
-
         child: Icon(
           Icons.shuffle_rounded,
           size: 25,
           fontWeight: FontWeight.w900,
         ),
       ),
-      //TODO:fix the state reload after first time
-      body:
-          allMusic.isEmpty
-              ? FutureBuilder(
-                future: androidChannel.loadMusicFromStorage(subDir.subDirUri),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(
-                      child: LinearProgressIndicator(color: Colors.green),
-                    );
-                  }
+      body: allMusic.isEmpty
+          ? FutureBuilder(
+              future: androidChannel.loadMusicFromStorage(subDir.subDirUri),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(
+                    child: LinearProgressIndicator(color: Colors.green),
+                  );
+                }
 
-                  if (snapshot.hasError) {
-                    return Center(
-                      child: Text(
-                        "Cannot load music",
-                        style: TextStyle(color: Colors.red),
-                      ),
-                    );
-                  } else if (snapshot.hasData) {
-                    final data = snapshot.data!;
-                    //print(data);
-                    if (allMusic.isEmpty) {
-                      for (final audio in data) {
-                        if (audio["name"].toString().contains(
-                          RegExp(r'(\.jpg|\.png|\.jpeg|\.txt)'),
-                        )) {
-                          continue;
-                        }
-                        final mName = cleanFileName(audio["name"]);
-                        allMusic.add(MusicInfo(name: mName, uri: audio["uri"]));
-                      }
-                    }
-
-                    return ListView.builder(
-                      itemCount: allMusic.length,
-                      itemBuilder: (context, index) {
-                        return ListTile(
-                          leading: Text("$index|"),
-                          title: Text(allMusic[index].name),
-                          onTap: () {
-                            playMusic(
-                              context,
-                              MusicInfo(
-                                name: allMusic[index].name,
-                                uri: allMusic[index].uri,
-                              ),
-                            );
-
-                            Navigator.of(context).push(
-                              MaterialPageRoute(builder: (_) => PlayMusic()),
-                            );
-                          },
-                        );
-                      },
-                    );
-                  }
-
+                if (snapshot.hasError) {
                   return Center(
                     child: Text(
                       "Cannot load music",
                       style: TextStyle(color: Colors.red),
                     ),
                   );
-                },
-              )
-              : ListView.builder(
-                itemCount: allMusic.length,
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    leading: Text("$index|"),
-                    title: Text(allMusic[index].name),
-                    onTap: () {
-                      playMusic(
-                        context,
-                        MusicInfo(
-                          name: allMusic[index].name,
-                          uri: allMusic[index].uri,
-                        ),
-                      );
+                } else if (snapshot.hasData) {
+                  final data = snapshot.data!;
 
-                      Navigator.of(
-                        context,
-                      ).push(MaterialPageRoute(builder: (_) => PlayMusic()));
+                  if (allMusic.isEmpty) {
+                    for (final audio in data) {
+                      if (audio["name"].toString().contains(
+                            RegExp(r'(\.jpg|\.png|\.jpeg|\.txt)'),
+                          )) {
+                        continue;
+                      }
+                      final mName = cleanFileName(audio["name"]);
+                      allMusic.add(MusicInfo(name: mName, uri: audio["uri"]));
+                    }
+                    saveData();
+                  }
+
+                  return ListView.builder(
+                    controller: scrollController,
+                    itemCount: allMusic.length,
+                    itemBuilder: (context, index) {
+                      return SizedBox(height: listTileHeight ,child: ListTile(
+                        leading: Text("$index|"),
+                        title: Text(allMusic[index].name),
+                        onTap: () {
+                          playMusic(
+                            context,
+                            MusicInfo(
+                              name: allMusic[index].name,
+                              uri: allMusic[index].uri,
+                            ),
+                          );
+
+                          Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => PlayMusic()),
+                          );
+                        },
+                      ));
                     },
                   );
-                },
-              ),
+                }
+
+                return Center(
+                  child: Text(
+                    "Cannot load music",
+                    style: TextStyle(color: Colors.red),
+                  ),
+                );
+              },
+            )
+          : ListView.builder(
+              controller: scrollController,
+              itemCount: allMusic.length,
+              itemBuilder: (context, index) {
+                return SizedBox(height: listTileHeight ,child: ListTile(
+                  leading: Text("$index|"),
+                  title: Text(allMusic[index].name),
+                  tileColor: allMusic[index].name == audio.name
+                      ? Colors.orangeAccent
+                      : null,
+                  onTap: () {
+                    playMusic(
+                      context,
+                      MusicInfo(
+                        name: allMusic[index].name,
+                        uri: allMusic[index].uri,
+                      ),
+                    );
+
+                    Navigator.of(
+                      context,
+                    ).push(MaterialPageRoute(builder: (_) => PlayMusic()));
+                  },
+                ));
+              },
+            ),
     );
   }
 }

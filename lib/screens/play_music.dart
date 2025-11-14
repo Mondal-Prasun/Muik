@@ -19,8 +19,7 @@ class PlayMusic extends ConsumerStatefulWidget {
 class _PlayMusicState extends ConsumerState<PlayMusic> {
   final androidChannel = AndroidChannel();
   final flutterChannel = FlutterChannel();
-
-  @override
+@override
   Widget build(BuildContext context) {
     final Subdirectory subDir = ref.read(subDirUriProvider);
     final MusicInfo currentMusic = ref.watch(currentMusicProvider);
@@ -53,7 +52,7 @@ class _PlayMusicState extends ConsumerState<PlayMusic> {
             Spacer(),
             MusicDurationIndicator(size: size),
             Spacer(),
-            PlayPauseWidget(size: size, playMusicContext: context,),
+            PlayPauseWidget(size: size, playMusicContext: context),
             Spacer(),
           ],
         ),
