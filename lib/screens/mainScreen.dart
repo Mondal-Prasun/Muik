@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:muik/channels/android_channel.dart';
 import 'package:muik/provider/content_provider.dart';
 import 'package:muik/screens/allMusic.dart';
+import 'package:muik/consts/constants.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
@@ -14,17 +15,36 @@ class MainScreen extends ConsumerStatefulWidget {
 }
 
 class _MainScreen extends ConsumerState<MainScreen> {
-  List subDirs = [];
+  late String? dirsPrefBuf;
+
+  List<Subdirectory> subDirs = [];
   final CarouselController cCon = CarouselController(initialItem: 0);
 
+  final androidChannel = AndroidChannel();
+
+  void setDirsSharePref(List<Subdirectory> dirs) async {
+    final StringBuffer sBuf = StringBuffer();
+
+    for (int i = 0; i < dirs.length; i++) {
+      if (i < (dirs.length - 1)) {
+        sBuf.write("${dirs[i].name}|${dirs[i].subDirUri},");
+      } else if (i == dirs.length - 1) {
+        sBuf.write("${dirs[i].name}|${dirs[i].subDirUri}");
+      }
+    }
+    androidChannel.setSharePef(
+        key: SharePrefKeys.DIR_KEY.name, value: sBuf.toString());
+  }
+
   void loadDirectory() async {
-    final dirs = await AndroidChannel().pickDirectory();
+    final dirs = await androidChannel.pickDirectory();
     // print(dirs);
     if (dirs != null) {
       setState(() {
         subDirs = dirs;
         gotFolders = true;
       });
+      setDirsSharePref(dirs);
     }
   }
 
@@ -41,6 +61,29 @@ class _MainScreen extends ConsumerState<MainScreen> {
     setState(() {
       showMusic = true;
     });
+  }
+
+  void getPrefDirs() async {
+    dirsPrefBuf =
+        await androidChannel.getSharePef(key: SharePrefKeys.DIR_KEY.name);
+
+    if (dirsPrefBuf != null && dirsPrefBuf != "") {
+      final List<Subdirectory> d = [];
+      final List<String> allDirs = dirsPrefBuf!.split(',');
+      for (final s in allDirs) {
+        final sd = s.split('|');
+        d.add(Subdirectory(name: sd[0], subDirUri: sd[1]));
+      }
+      //setState(() {
+        //subDirs = d;
+      //});
+    }
+  }
+
+  @override
+  void initState() {
+    getPrefDirs();
+    super.initState();
   }
 
   @override
@@ -60,16 +103,9 @@ class _MainScreen extends ConsumerState<MainScreen> {
         ),
       );
     } else if (!showMusic) {
-      final List withoutDotFile = [];
       final rand = Random();
 
-      for (final d in subDirs) {
-        if (!d["name"].toString().startsWith(".")) {
-          withoutDotFile.add(d);
-        }
-      }
-
-      final dirTile = List.generate(withoutDotFile.length, (index) {
+      final dirTile = List.generate(subDirs.length, (index) {
         return Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.only(
@@ -86,7 +122,7 @@ class _MainScreen extends ConsumerState<MainScreen> {
           ),
           padding: EdgeInsetsDirectional.all(25),
           child: Text(
-            "${withoutDotFile[index]["name"]}",
+            subDirs[index].name,
             style: TextStyle(
               color: Colors.white,
               fontSize: 26,
@@ -128,10 +164,7 @@ class _MainScreen extends ConsumerState<MainScreen> {
                     onTap: (index) {
                       loadAllMusic(
                         context,
-                        Subdirectory(
-                          name: withoutDotFile[index]["name"],
-                          subDirUri: withoutDotFile[index]["uri"],
-                        ),
+                        subDirs[index],
                       );
                     },
                     children: dirTile,
@@ -260,14 +293,15 @@ class _CustomSearchBarState extends ConsumerState<_CustomSearchBar> {
           width: isTapped == false ? 40 : 300,
           duration: Duration(milliseconds: 1000),
           child: SearchBar(
-	   onTap: (){
-	     setState(() {
-	     	isTapped = !isTapped;
-	    });				
-	   },
+            onTap: () {
+              setState(() {
+                isTapped = !isTapped;
+              });
+            },
             onChanged: (value) {
-              final audio = ref.read(allMusicProvider.notifier).searchAudio(value);
-		ref.read(searchedMusicProvider.notifier).setAudio(audio.first);
+              final audio =
+                  ref.read(allMusicProvider.notifier).searchAudio(value);
+              ref.read(searchedMusicProvider.notifier).setAudio(audio.first);
             },
           ),
         ));

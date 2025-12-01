@@ -6,6 +6,7 @@ import android.app.ComponentCaller
 
 
 import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 
@@ -40,6 +41,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.net.URI
+import androidx.core.content.edit
 
 
 class MainActivity : FlutterActivity(){
@@ -52,6 +54,8 @@ class MainActivity : FlutterActivity(){
         private const val READ_MUSIC_REQUEST_CODE = 101
         private const val REQUEST_CODE_OPEN_DIRECTORY = 42
         private var mediaSessionController:MediaController?= null
+
+        private val S_PREF_DATA = "Muik_Data"
     }
 
     private var resultPending:MethodChannel.Result? = null
@@ -61,6 +65,7 @@ class MainActivity : FlutterActivity(){
     private var flEngine : FlutterEngine? = null
 
     private var kJob : Job? = null
+
 
 
 
@@ -123,9 +128,9 @@ class MainActivity : FlutterActivity(){
 //                     ))
             }
 
-            override fun onEvents(player: Player, events: Player.Events) {
-
-            }
+//            override fun onEvents(player: Player, events: Player.Events) {
+//
+//            }
         })
     }
 
@@ -136,6 +141,8 @@ class MainActivity : FlutterActivity(){
         //requesting media storage permission
          requestAudioStoragePermission()
         flEngine = flutterEngine
+
+         val sPref : SharedPreferences = getSharedPreferences("Test", MODE_PRIVATE)
 
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
@@ -166,17 +173,28 @@ class MainActivity : FlutterActivity(){
                 }
 
                 "setSharePref" ->{
-
-
-
+                    try {
+                    val arg = call.arguments<Map<String, String>>()
+                        sPref.edit {
+                            putString(arg?.keys?.first(), arg?.values?.first())
+                            apply()
+                        }
+                    }catch (e: Exception){
+                        Log.d("Sharepref","$e")
+                        result.error("SHARE PREF", "${e.message}", null)
+                    }
                 }
 
                 "getSharePref" ->{
-
-
+                    try{
+                        val arg = call.arguments<String>()
+                        val value = sPref.getString(arg, null)
+                        result.success(value)
+                    }catch (e: Exception){
+                        Log.d("Sharepref","$e")
+                        result.error("SHARE PREF", "${e.message}", null)
+                    }
                 }
-
-
 
                 "startSingleMusic" ->{
                     val sUri:String? = call.arguments<String>()

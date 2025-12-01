@@ -6,7 +6,8 @@ import 'package:muik/provider/content_provider.dart';
 import 'package:muik/screens/play_music.dart';
 
 class PlayPauseWidget extends ConsumerStatefulWidget {
-  const PlayPauseWidget({super.key, required this.size, required this.playMusicContext});
+  const PlayPauseWidget(
+      {super.key, required this.size, required this.playMusicContext});
   final Size size;
   final BuildContext playMusicContext;
   @override
@@ -88,7 +89,6 @@ class _PlayPauseState extends ConsumerState<PlayPauseWidget> {
               color: Colors.white,
             ),
           ),
-
           Container(
             height: boxHeight / 2,
             width: boxWidth / 6,
@@ -100,9 +100,10 @@ class _PlayPauseState extends ConsumerState<PlayPauseWidget> {
             child: IconButton(
               onPressed: () async {
                 final isChanged = await androidChannel.nextMusic();
-		if(isChanged){
-		  Navigator.of(widget.playMusicContext).pushReplacement(MaterialPageRoute(builder: (_)=> PlayMusic())); 
-		}
+                if (isChanged) {
+                  Navigator.of(widget.playMusicContext).pushReplacement(
+                      MaterialPageRoute(builder: (_) => PlayMusic()));
+                }
               },
               icon: Icon(Icons.fork_right_rounded),
             ),
@@ -112,3 +113,5 @@ class _PlayPauseState extends ConsumerState<PlayPauseWidget> {
     );
   }
 }
+
+

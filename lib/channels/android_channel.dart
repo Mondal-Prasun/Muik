@@ -1,16 +1,25 @@
 import 'dart:developer';
 import 'package:flutter/services.dart';
+import 'package:muik/provider/content_provider.dart';
 
 class AndroidChannel {
   final _androidBackendChannel = MethodChannel("Android_Channel_Music");
 
-  Future<List<dynamic>?> pickDirectory() async {
+  Future<List<Subdirectory>?> pickDirectory() async {
     try {
       final dirUris = await _androidBackendChannel.invokeMethod(
         "pickPreferredDirectory",
       );
+     
+      List<Subdirectory> allDirs = [];
 
-      return dirUris;
+     for (final d in dirUris) {
+        if (!d["name"].toString().startsWith(".")) {
+            allDirs.add(Subdirectory(name: d["name"], subDirUri: d["uri"]));
+        }
+      }
+
+      return allDirs;
     } on PlatformException catch (e) {
       log(e.message!);
       return null;
@@ -30,12 +39,32 @@ class AndroidChannel {
     }
   }
 
+  Future<void> setSharePef({required String key, required String value}) async {
+    try {
+      await _androidBackendChannel.invokeMethod("setSharePref", {
+	key: value,
+      }); 
+    } on PlatformException catch (e) {
+      log(e.message!);
+      rethrow;
+    }
+  }
+
+  Future<String?> getSharePef({required String key}) async {
+    try {
+      final res =
+          await _androidBackendChannel.invokeMethod("getSharePref", key);
+      return res as String;
+    } on PlatformException catch (e) {
+      log(e.message!);
+      rethrow;
+    }
+  }
+
   Future<Uint8List> getMusicArt(String audioUri) async {
     try {
-      final artByteArray =
-          await _androidBackendChannel.invokeMethod("getAudioArt", audioUri)
-              as Uint8List;
-      //print("art: $artByteArray");
+      final artByteArray = await _androidBackendChannel.invokeMethod(
+          "getAudioArt", audioUri) as Uint8List;
       return artByteArray;
     } on PlatformException catch (e) {
       log(e.message!);
@@ -117,11 +146,13 @@ class AndroidChannel {
 
   Future<bool> nextMusic() async {
     try {
-      final bool isChanged = await _androidBackendChannel.invokeMethod("nextMusic") as bool;
-	return isChanged;
+      final bool isChanged =
+          await _androidBackendChannel.invokeMethod("nextMusic") as bool;
+      return isChanged;
     } on PlatformException catch (e) {
       log(e.message!);
-       return false;
+      return false;
     }
   }
 }
+
