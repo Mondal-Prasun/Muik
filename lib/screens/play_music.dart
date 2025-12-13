@@ -20,14 +20,13 @@ class _PlayMusicState extends ConsumerState<PlayMusic> {
   final androidChannel = AndroidChannel();
   final flutterChannel = FlutterChannel();
 
-@override
+  @override
   Widget build(BuildContext context) {
-    final Subdirectory subDir = ref.read(subDirUriProvider);
     final MusicInfo currentMusic = ref.watch(currentMusicProvider);
     final Size size = MediaQuery.of(context).size;
 
     return Scaffold(
-      appBar: AppBar(title: Text(subDir.name), centerTitle: true),
+      appBar: AppBar(title: Text("All Music"), centerTitle: true),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -61,5 +60,3 @@ class _PlayMusicState extends ConsumerState<PlayMusic> {
     );
   }
 }
-
-

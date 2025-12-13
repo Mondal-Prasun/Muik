@@ -48,5 +48,10 @@ class FolderLoad {
         return allContent
     }
 
+    fun getContentsCount(context: Context, uri: Uri): Int{
+        val contentDirectory = DocumentFile.fromTreeUri(context, uri)
+        return if (contentDirectory != null && contentDirectory.isDirectory) contentDirectory.listFiles().size else 0
+    }
+
 
 }

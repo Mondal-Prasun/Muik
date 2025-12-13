@@ -171,10 +171,17 @@ class MainActivity : FlutterActivity(){
                              result.error("ERROR URI","Sub dir string is null : ${e.message}",null)
                          }
                 }
+                "getContentCount" -> {
+                    val subDirUriS: String = call.arguments<String>() as String
+                    val count = folderLoad.getContentsCount(context, subDirUriS.toUri())
 
+                    result.success(count)
+
+                }
                 "setSharePref" ->{
                     try {
                     val arg = call.arguments<Map<String, String>>()
+
                         sPref.edit {
                             putString(arg?.keys?.first(), arg?.values?.first())
                             apply()

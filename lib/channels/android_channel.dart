@@ -10,12 +10,12 @@ class AndroidChannel {
       final dirUris = await _androidBackendChannel.invokeMethod(
         "pickPreferredDirectory",
       );
-     
+
       List<Subdirectory> allDirs = [];
 
-     for (final d in dirUris) {
+      for (final d in dirUris) {
         if (!d["name"].toString().startsWith(".")) {
-            allDirs.add(Subdirectory(name: d["name"], subDirUri: d["uri"]));
+          allDirs.add(Subdirectory(name: d["name"], subDirUri: d["uri"]));
         }
       }
 
@@ -39,11 +39,22 @@ class AndroidChannel {
     }
   }
 
+  Future<int> getMusicCount(String subDirUri) async {
+    try {
+      final int count = await _androidBackendChannel.invokeMethod(
+          "getContentCount", subDirUri);
+      return count;
+    } on PlatformException catch (e) {
+      log(e.message!);
+      return 0;
+    }
+  }
+
   Future<void> setSharePef({required String key, required String value}) async {
     try {
       await _androidBackendChannel.invokeMethod("setSharePref", {
-	key: value,
-      }); 
+        key: value,
+      });
     } on PlatformException catch (e) {
       log(e.message!);
       rethrow;
@@ -155,4 +166,3 @@ class AndroidChannel {
     }
   }
 }
-

@@ -1,3 +1,3 @@
-enum SharePrefKeys{
-  DIR_KEY,
+enum SharePrefKeys {
+  REFRESH_TIME,
 }

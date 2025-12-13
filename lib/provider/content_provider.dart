@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
 
 class Subdirectory {
   Subdirectory({required this.name, required this.subDirUri});
@@ -8,27 +7,28 @@ class Subdirectory {
   final String subDirUri;
 }
 
-class _SubDirUriNotifier extends Notifier<Subdirectory> {
+class _SubDirUriNotifier extends Notifier<List<Subdirectory>> {
   @override
-  Subdirectory build() => Subdirectory(name: "", subDirUri: "");
+  List<Subdirectory> build() => [];
 
-  void setSubDirUri(Subdirectory sub) {
-    state = sub;
+  void setSubDirUri(List<Subdirectory> subDirs) {
+    state = subDirs;
   }
 }
 
-final subDirUriProvider = NotifierProvider<_SubDirUriNotifier, Subdirectory>(
+final subDirUriProvider =
+    NotifierProvider<_SubDirUriNotifier, List<Subdirectory>>(
   _SubDirUriNotifier.new,
 );
 
 class MusicInfo {
   MusicInfo({required this.name, required this.uri})
-      : uuid = Uuid().v4(),
+      : uuid = null,
         title = null,
         artist = null,
         duration = null,
         art = null;
-  String uuid;
+  String? uuid;
   final String name;
   final String uri;
   String? title;
@@ -82,10 +82,13 @@ class _AllMusicListNotifier extends Notifier<Map<String, List<MusicInfo>>> {
 
   List<MusicInfo> searchAudio(String value) {
     if (state.values.first.isNotEmpty) {
-      return [...state.values.first.where((info) => info.name.toLowerCase().contains(value))];
+      return [
+        ...state.values.first
+            .where((info) => info.name.toLowerCase().contains(value))
+      ];
     } else {
       return [
-        MusicInfo(uri:"", name:""),
+        MusicInfo(uri: "", name: ""),
       ];
     }
   }
@@ -102,7 +105,6 @@ final allMusicProvider =
 class _SearchedAudioNotifier extends Notifier<MusicInfo> {
   @override
   MusicInfo build() => MusicInfo(uri: "", name: "");
-
   void setAudio(MusicInfo audio) {
     state = audio;
   }

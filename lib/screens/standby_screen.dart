@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:muik/channels/flutter_channel.dart';
 import 'package:muik/provider/content_provider.dart';
+import 'package:muik/screens/allMusic.dart';
 import 'package:muik/screens/mainScreen.dart';
 import 'package:muik/screens/play_music.dart';
 import 'package:muik/widgets/current_audio_island.dart';
@@ -32,11 +33,9 @@ class _StandByScreenState extends ConsumerState<StandbyScreen> {
       "changed music : ${meta["name"]} | ${meta["artist"]} | ${meta["duration"]}",
     );
     final info = ref.read(currentMusicProvider);
-    ref
-        .read(currentMusicProvider.notifier)
-        .setCurrnetMusic(
+    ref.read(currentMusicProvider.notifier).setCurrnetMusic(
           MusicInfo(name: info.name, uri: info.uri)
-	    //..uuid = info.uuid
+            //..uuid = info.uuid
             ..title = meta["name"] as String
             ..artist = meta["artist"]
             ..duration = meta["duration"],
@@ -59,7 +58,7 @@ class _StandByScreenState extends ConsumerState<StandbyScreen> {
 
     return Stack(
       children: [
-        MainScreen(),
+        HomeScreen(),
         Positioned(
           bottom: 40,
           left: 0,
