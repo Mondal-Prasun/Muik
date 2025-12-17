@@ -1,11 +1,11 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:muik/channels/android_channel.dart';
 import 'package:muik/channels/flutter_channel.dart';
+import 'package:muik/main.dart';
 import 'package:muik/provider/content_provider.dart';
-import 'package:muik/provider/loaded_data_provider.dart';
 import 'package:muik/screens/play_music.dart';
+import 'package:muik/widgets/custom_search.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -31,6 +31,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   int musicLimit = 30;
   int musicLimitOffset = 0;
+  bool firstLoad = true;
+  bool loadingMusic = false;
 
   String cleanFileName(String input) {
     final regex = RegExp(
@@ -68,18 +70,41 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
+  Widget musicListUi() {
+    return ListView.builder(
+      controller: scrollController,
+      itemCount: allMusic.length,
+      itemBuilder: (context, index) {
+        return SizedBox(
+            height: listTileHeight,
+            child: ListTile(
+              leading: Text("$index|"),
+              title: Text(allMusic[index].name),
+              onTap: () {
+                playMusic(
+                  context,
+                  MusicInfo(
+                    name: allMusic[index].name,
+                    uri: allMusic[index].uri,
+                  ),
+                );
+
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => PlayMusic()),
+                );
+              },
+            ));
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    scrollController.addListener(() {
-      print(scrollController.offset);
-    });
-
+    allMusic = ref.read(allMusicProvider);
     return Scaffold(
+      appBar: AppBar(
+        leading: CustomSearchBar(),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           shuffleMusic();
@@ -93,64 +118,43 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           fontWeight: FontWeight.w900,
         ),
       ),
-      body: FutureBuilder(
-        future: ref
-            .read(loadedDataProvider.notifier)
-            .getLimitedMusic(musicLimit, musicLimitOffset),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(
-              child: LinearProgressIndicator(color: Colors.green),
-            );
-          }
+      body: allMusic.isEmpty
+          ? FutureBuilder(
+              future: loadDb.getLimitedMusic(musicLimit, musicLimitOffset),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(
+                    child: LinearProgressIndicator(color: Colors.green),
+                  );
+                }
 
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                "Cannot load music",
-                style: TextStyle(color: Colors.red),
-              ),
-            );
-          } else if (snapshot.hasData) {
-            final data = snapshot.data!;
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Text(
+                      "Cannot load music ${snapshot.error}",
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  );
+                } else if (snapshot.hasData) {
+                  final data = snapshot.data!;
 
-            allMusic = [...allMusic, ...data];
+                  allMusic = data;
+                  Future(() {
+                    ref.read(allMusicProvider.notifier).setAll(data);
+                  });
 
-            return ListView.builder(
-              controller: scrollController,
-              itemCount: allMusic.length,
-              itemBuilder: (context, index) {
-                return SizedBox(
-                    height: listTileHeight,
-                    child: ListTile(
-                      leading: Text("$index|"),
-                      title: Text(allMusic[index].name),
-                      onTap: () {
-                        playMusic(
-                          context,
-                          MusicInfo(
-                            name: allMusic[index].name,
-                            uri: allMusic[index].uri,
-                          ),
-                        );
+                  return musicListUi();
+                }
 
-                        Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => PlayMusic()),
-                        );
-                      },
-                    ));
+                return Center(
+                  child: Text(
+                    "Cannot load music",
+                    style: TextStyle(color: Colors.red),
+                  ),
+                );
               },
-            );
-          }
-
-          return Center(
-            child: Text(
-              "Cannot load music",
-              style: TextStyle(color: Colors.red),
-            ),
-          );
-        },
-      ),
+            )
+          : musicListUi(),
     );
   }
 }

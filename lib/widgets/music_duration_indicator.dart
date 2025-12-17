@@ -52,7 +52,7 @@ class _MusicDuarationIndicator extends ConsumerState<MusicDurationIndicator> {
       if (cDu < prevDu) {
         print("yep its small ................................");
         for (int i = 0; i <= neededIndCount; i++) {
-	indCount = i;
+          indCount = i;
           indiCators[indCount] = _IndicatorLines(
             height: randHeightList[indCount],
             width: indicatorWidth,
@@ -209,8 +209,8 @@ class _IndicatorState extends State<_IndicatorLines>
 
   @override
   void dispose() {
-    t1!.cancel();
-    t2!.cancel();
+    t1?.cancel();
+    t2?.cancel();
     super.dispose();
   }
 

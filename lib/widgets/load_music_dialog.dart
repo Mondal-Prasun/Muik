@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:muik/channels/android_channel.dart';
 import 'package:muik/consts/constants.dart';
+import 'package:muik/main.dart';
 import 'package:muik/provider/content_provider.dart';
-import 'package:muik/provider/loaded_data_provider.dart';
 import 'package:muik/screens/standby_screen.dart';
 
 class LoadMusicDialog extends ConsumerStatefulWidget {
@@ -44,9 +44,7 @@ class _LoadMusicDialogState extends ConsumerState<LoadMusicDialog> {
               r'^\d+\.\s*|(\.flac|\.mp3|\.wav|\.ogg|\.aac|\.m4a|\.alac|\.opus)$',
               caseSensitive: false,
             ))) {
-          ref
-              .read(loadedDataProvider.notifier)
-              .insertMusicInfo(s["name"] as String, s["uri"] as String);
+          loadDb.insertMusicInfo(s["name"] as String, s["uri"] as String);
           setState(() {
             _loadedMusicName = s["name"] as String;
             _loadedCount++;

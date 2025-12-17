@@ -68,23 +68,18 @@ final isLandMusicPlayingProvider =
   _IslandMusicPlayingNotifer.new,
 );
 
-class _AllMusicListNotifier extends Notifier<Map<String, List<MusicInfo>>> {
+class _AllMusicListNotifier extends Notifier<List<MusicInfo>> {
   @override
-  Map<String, List<MusicInfo>> build() => {
-        "": [],
-      };
+  List<MusicInfo> build() => [];
 
-  void setAll(List<MusicInfo> audioList, String subDirUri) {
-    state = {
-      subDirUri: audioList,
-    };
+  void setAll(List<MusicInfo> audioList) {
+    state = audioList;
   }
 
   List<MusicInfo> searchAudio(String value) {
-    if (state.values.first.isNotEmpty) {
+    if (state.isNotEmpty) {
       return [
-        ...state.values.first
-            .where((info) => info.name.toLowerCase().contains(value))
+        ...state.where((info) => info.name.toLowerCase().contains(value))
       ];
     } else {
       return [
@@ -94,12 +89,12 @@ class _AllMusicListNotifier extends Notifier<Map<String, List<MusicInfo>>> {
   }
 
   void reset() {
-    state = {};
+    state = [];
   }
 }
 
 final allMusicProvider =
-    NotifierProvider<_AllMusicListNotifier, Map<String, List<MusicInfo>>>(
+    NotifierProvider<_AllMusicListNotifier, List<MusicInfo>>(
         _AllMusicListNotifier.new);
 
 class _SearchedAudioNotifier extends Notifier<MusicInfo> {

@@ -65,7 +65,7 @@ class AndroidChannel {
     try {
       final res =
           await _androidBackendChannel.invokeMethod("getSharePref", key);
-      return res as String;
+      return res as String?;
     } on PlatformException catch (e) {
       log(e.message!);
       rethrow;
