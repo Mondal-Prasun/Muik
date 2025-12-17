@@ -12,10 +12,18 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
-
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 
 
 class MusicLoadService{
+
+    private var kJob: Job? = null
+
     fun getAudioThumbnail(context: Context,aUri : Uri) :ByteArray?{
         val retriver = MediaMetadataRetriever()
         var thumbnail: ByteArray? = null
@@ -150,6 +158,17 @@ class MusicLoadService{
             return false
         }
     }
+
+    fun prevAudio(mediaController: MediaController?) : Boolean{
+        try{
+            mediaController?.seekToPrevious()
+            return true
+        }catch(e: Exception){
+            Log.d("MusicLoadService","Cannot change to prev music music:${e.message}")
+            return false
+        }
+    }
+
 
 
 }

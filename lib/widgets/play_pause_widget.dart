@@ -64,7 +64,13 @@ class _PlayPauseState extends ConsumerState<PlayPauseWidget> {
               borderRadius: BorderRadius.circular(50),
             ),
             child: IconButton(
-              onPressed: () {},
+              onPressed: () async {
+                final isChanged = await androidChannel.prevMusic();
+                if (isChanged) {
+                  Navigator.of(widget.playMusicContext).pushReplacement(
+                      MaterialPageRoute(builder: (_) => PlayMusic()));
+                }
+              },
               icon: Icon(Icons.fork_left_rounded),
             ),
           ),
@@ -113,5 +119,3 @@ class _PlayPauseState extends ConsumerState<PlayPauseWidget> {
     );
   }
 }
-
-

@@ -36,10 +36,10 @@ class MusicMediaSessionService:MediaSessionService(){
         super.onCreate()
 
          _audioAttributes = AudioAttributes.Builder().setUsage(C.USAGE_MEDIA).setContentType(C.AUDIO_CONTENT_TYPE_MUSIC).build()
-        _player = ExoPlayer.Builder(this).setAudioAttributes(_audioAttributes!!,true).build()
+        _player = ExoPlayer.Builder(this)
+            .setAudioAttributes(_audioAttributes!!,true).build()
         _mediaSession = MediaSession.Builder(this,_player!!)
             .build()
-
         _player!!.addListener(object : Player.Listener{
             override fun onIsPlayingChanged(isPlaying: Boolean) {
 

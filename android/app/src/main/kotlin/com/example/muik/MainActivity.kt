@@ -42,6 +42,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.net.URI
 import androidx.core.content.edit
+import androidx.lifecycle.lifecycleScope
 
 
 class MainActivity : FlutterActivity(){
@@ -67,10 +68,14 @@ class MainActivity : FlutterActivity(){
     private var kJob : Job? = null
 
 
-
-
     override fun onStart() {
         super.onStart()
+
+        val flChannelPlay = MethodChannel(flEngine!!.dartExecutor.binaryMessenger, FLUTTER_CHANNEL_FOR_PLAY)
+        val flChannelMeta = MethodChannel(flEngine!!.dartExecutor.binaryMessenger, FLUTTER_CHANNEL_FOR_META)
+        val flChannelDu = MethodChannel(flEngine!!.dartExecutor.binaryMessenger, FLUTTER_CHANNEL_FOR_DU)
+
+
         val sessionToken = SessionToken(context.applicationContext,
             ComponentName(context.applicationContext,MusicMediaSessionService::class.java)
         )
@@ -78,60 +83,57 @@ class MainActivity : FlutterActivity(){
         factory.addListener(
             {
                 mediaSessionController = factory.get()
-            },
-            ContextCompat.getMainExecutor(this@MainActivity)
-        )
 
-        val flChannelPlay = MethodChannel(flEngine!!.dartExecutor.binaryMessenger, FLUTTER_CHANNEL_FOR_PLAY)
-        val flChannelMeta = MethodChannel(flEngine!!.dartExecutor.binaryMessenger, FLUTTER_CHANNEL_FOR_META)
-        val flChannelDu = MethodChannel(flEngine!!.dartExecutor.binaryMessenger, FLUTTER_CHANNEL_FOR_DU)
-
-        mediaSessionController?.addListener(object : Player.Listener{
-            override fun onIsPlayingChanged(isPlaying: Boolean) {
-                flChannelPlay.invokeMethod("IsKtMusicPlaying",isPlaying)
-                kJob?.cancel()
-                kJob = CoroutineScope(Dispatchers.Main).launch {
-                    while(isActive) {
-                        Log.d(
-                            "Music",
-                            "currentPosition: ${mediaSessionController!!.currentPosition}"
-                        )
-                        flChannelDu.invokeMethod("GetCurrentDuPos", mediaSessionController!!.currentPosition.toString())
-                        delay(1000)
+                mediaSessionController?.addListener(object : Player.Listener{
+                    override fun onIsPlayingChanged(isPlaying: Boolean) {
+                        flChannelPlay.invokeMethod("IsKtMusicPlaying",isPlaying)
+                        kJob?.cancel()
+                        kJob = lifecycleScope.launch {
+                            while(isActive) {
+                                Log.d(
+                                    "Music",
+                                    "currentPosition: ${mediaSessionController!!.currentPosition}"
+                                )
+                                flChannelDu.invokeMethod("GetCurrentDuPos", mediaSessionController!!.currentPosition.toString())
+                                delay(1000)
+                            }
+                        }
+                        if(!isPlaying){
+                            kJob?.cancel("Not Playing the music")
+                        }
                     }
-                }
-                if(!isPlaying){
-                    kJob?.cancel("Not Playing the music")
-                }
-            }
 
-            var currentMediaId: String? = null
+                    var currentMediaId: String? = null
 
-            override fun onIsLoadingChanged(isLoading: Boolean) {
-                Log.d("Music","has loaded: $isLoading .........................................................................................")
+                    override fun onIsLoadingChanged(isLoading: Boolean) {
+                        Log.d("Music","has loaded: $isLoading .........................................................................................")
 
-                if(!isLoading ){
-                    if(currentMediaId== null ||  mediaSessionController!!.currentMediaItem?.mediaId != currentMediaId){
-                   flChannelMeta.invokeMethod("MediaChanged", mapOf<String,String>(
-                       "name" to mediaSessionController!!.mediaMetadata.title.toString(),
-                       "artist" to mediaSessionController!!.mediaMetadata.artist.toString(),
-                       "duration" to mediaSessionController!!.duration.toString()
-                   ))}
-               }
-            }
+                        if(!isLoading ){
+                            if(currentMediaId== null ||  mediaSessionController!!.currentMediaItem?.mediaId != currentMediaId){
+                                flChannelMeta.invokeMethod("MediaChanged", mapOf<String,String>(
+                                    "name" to mediaSessionController!!.mediaMetadata.title.toString(),
+                                    "artist" to mediaSessionController!!.mediaMetadata.artist.toString(),
+                                    "duration" to mediaSessionController!!.duration.toString()
+                                ))}
+                        }
+                    }
 
-            override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
+                    override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
 //                 flChannelMeta.invokeMethod("MediaChanged", mapOf<String,String>(
 //                     "name" to mediaSessionController!!.mediaMetadata.title.toString(),
 //                     "artist" to mediaSessionController!!.mediaMetadata.artist.toString(),
 //                     "duration" to mediaSessionController!!.duration.toString()
 //                     ))
-            }
+                    }
+                })
 
-//            override fun onEvents(player: Player, events: Player.Events) {
-//
-//            }
-        })
+
+            },
+            ContextCompat.getMainExecutor(this@MainActivity)
+
+        )
+
+
     }
 
 
@@ -180,7 +182,7 @@ class MainActivity : FlutterActivity(){
                 }
                 "setSharePref" ->{
                     try {
-                    val arg = call.arguments<Map<String, String>>()
+                      val arg = call.arguments<Map<String, String>>()
 
                         sPref.edit {
                             putString(arg?.keys?.first(), arg?.values?.first())
@@ -242,6 +244,12 @@ class MainActivity : FlutterActivity(){
                 }
                 "nextMusic" ->{
                     val res = musicLoadService.nextAudio(
+                        mediaSessionController
+                    )
+                    result.success(res)
+                }
+                "prevMusic" ->{
+                    val res = musicLoadService.prevAudio(
                         mediaSessionController
                     )
                     result.success(res)

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:muik/channels/android_channel.dart';
@@ -70,7 +72,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  Widget musicListUi() {
+  Widget musicListUi(int? sIndex) {
     return ListView.builder(
       controller: scrollController,
       itemCount: allMusic.length,
@@ -78,6 +80,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         return SizedBox(
             height: listTileHeight,
             child: ListTile(
+              tileColor: sIndex == null
+                  ? null
+                  : index == sIndex
+                      ? Colors.orangeAccent
+                      : Colors.white,
               leading: Text("$index|"),
               title: Text(allMusic[index].name),
               onTap: () {
@@ -101,9 +108,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     allMusic = ref.read(allMusicProvider);
+    final searchedMusic = ref.watch(searchedMusicProvider);
+
+    final searcheredIndex = allMusic.indexOf(searchedMusic);
+
+    if (searcheredIndex > 0) {
+      scrollController.animateTo(
+        (listTileHeight * searcheredIndex),
+        duration: Duration(milliseconds: 200),
+        curve: Curves.bounceInOut,
+      );
+    }
     return Scaffold(
       appBar: AppBar(
-        leading: CustomSearchBar(),
+        title: CustomSearchBar(),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -143,7 +161,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ref.read(allMusicProvider.notifier).setAll(data);
                   });
 
-                  return musicListUi();
+                  return musicListUi(null);
                 }
 
                 return Center(
@@ -154,7 +172,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 );
               },
             )
-          : musicListUi(),
+          : musicListUi(searcheredIndex),
     );
   }
 }

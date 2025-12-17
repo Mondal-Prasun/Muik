@@ -14,27 +14,19 @@ class _CustomSearchBarState extends ConsumerState<CustomSearchBar> {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return Container(
+      width: double.infinity,
+      child: SearchBar(
         onTap: () {
           setState(() {
             isTapped = !isTapped;
           });
         },
-        child: AnimatedContainer(
-          width: isTapped == false ? 40 : 300,
-          duration: Duration(milliseconds: 1000),
-          child: SearchBar(
-            onTap: () {
-              setState(() {
-                isTapped = !isTapped;
-              });
-            },
-            onChanged: (value) {
-              final audio =
-                  ref.read(allMusicProvider.notifier).searchAudio(value);
-              ref.read(searchedMusicProvider.notifier).setAudio(audio.first);
-            },
-          ),
-        ));
+        onChanged: (value) {
+          final audio = ref.read(allMusicProvider.notifier).searchAudio(value);
+          ref.read(searchedMusicProvider.notifier).setAudio(audio.first);
+        },
+      ),
+    );
   }
 }

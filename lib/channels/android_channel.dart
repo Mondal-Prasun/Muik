@@ -165,4 +165,15 @@ class AndroidChannel {
       return false;
     }
   }
+
+  Future<bool> prevMusic() async {
+    try {
+      final bool isChanged =
+          await _androidBackendChannel.invokeMethod("prevMusic") as bool;
+      return isChanged;
+    } on PlatformException catch (e) {
+      log(e.message!);
+      return false;
+    }
+  }
 }
