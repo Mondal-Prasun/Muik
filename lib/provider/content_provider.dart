@@ -1,26 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class Subdirectory {
-  Subdirectory({required this.name, required this.subDirUri});
-  final String name;
-  final String subDirUri;
-}
-
-class _SubDirUriNotifier extends Notifier<List<Subdirectory>> {
-  @override
-  List<Subdirectory> build() => [];
-
-  void setSubDirUri(List<Subdirectory> subDirs) {
-    state = subDirs;
-  }
-}
-
-final subDirUriProvider =
-    NotifierProvider<_SubDirUriNotifier, List<Subdirectory>>(
-  _SubDirUriNotifier.new,
-);
-
 class MusicInfo {
   MusicInfo({required this.name, required this.uri})
       : uuid = null,

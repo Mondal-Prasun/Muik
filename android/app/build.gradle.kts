@@ -39,10 +39,9 @@ android {
     }
 
     dependencies {
-        implementation("androidx.media3:media3-exoplayer:1.8.0")
-        implementation("androidx.media3:media3-common:1.8.0")
-        implementation("androidx.media3:media3-session:1.8.0")
-        implementation("androidx.documentfile:documentfile:1.1.0")
+        implementation("androidx.media3:media3-exoplayer:1.9.0")
+        implementation("androidx.media3:media3-common:1.9.0")
+        implementation("androidx.media3:media3-session:1.9.0")
         implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
     }
 }

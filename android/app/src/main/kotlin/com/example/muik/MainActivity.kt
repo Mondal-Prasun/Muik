@@ -46,22 +46,24 @@ import androidx.lifecycle.lifecycleScope
 
 
 class MainActivity : FlutterActivity(){
-    companion object{
-        private const val DART_CHANNEL = "Android_Channel_Music"
-        private const val FLUTTER_CHANNEL_FOR_PLAY = "Flutter_Channel_Music/Play"
-        private const val FLUTTER_CHANNEL_FOR_META = "Flutter_Channel_Music/Meta"
-        private const val FLUTTER_CHANNEL_FOR_DU = "Flutter_Channel_Music/Du"
 
-        private const val READ_MUSIC_REQUEST_CODE = 101
-        private const val REQUEST_CODE_OPEN_DIRECTORY = 42
+        private val DART_CHANNEL = "Android_Channel_Music"
+        private val FLUTTER_CHANNEL_FOR_PLAY = "Flutter_Channel_Music/Play"
+        private val FLUTTER_CHANNEL_FOR_META = "Flutter_Channel_Music/Meta"
+        private val FLUTTER_CHANNEL_FOR_DU = "Flutter_Channel_Music/Du"
+
+        private val READ_MUSIC_REQUEST_CODE = 101
+        private val REQUEST_CODE_OPEN_DIRECTORY = 42
         private var mediaSessionController:MediaController?= null
 
         private val S_PREF_DATA = "Muik_Data"
-    }
+
 
     private var resultPending:MethodChannel.Result? = null
     private val musicLoadService : MusicLoadService = MusicLoadService()
-    private val folderLoad:FolderLoad = FolderLoad()
+    private val musicLoad : MusicLoad = MusicLoad()
+
+    private var selectedDirectory : Uri? = null
 
     private var flEngine : FlutterEngine? = null
 
@@ -84,47 +86,38 @@ class MainActivity : FlutterActivity(){
             {
                 mediaSessionController = factory.get()
 
+
                 mediaSessionController?.addListener(object : Player.Listener{
-                    override fun onIsPlayingChanged(isPlaying: Boolean) {
-                        flChannelPlay.invokeMethod("IsKtMusicPlaying",isPlaying)
-                        kJob?.cancel()
-                        kJob = lifecycleScope.launch {
-                            while(isActive) {
-                                Log.d(
-                                    "Music",
-                                    "currentPosition: ${mediaSessionController!!.currentPosition}"
-                                )
-                                flChannelDu.invokeMethod("GetCurrentDuPos", mediaSessionController!!.currentPosition.toString())
-                                delay(1000)
+
+                    override fun onEvents(player: Player, events: Player.Events) {
+                        if(events.contains(MediaController.EVENT_PLAYBACK_STATE_CHANGED) || events.contains(MediaController.EVENT_IS_PLAYING_CHANGED)){
+                            flChannelPlay.invokeMethod("IsKtMusicPlaying",mediaSessionController?.isPlaying())
+                            kJob?.cancel()
+                            kJob = lifecycleScope.launch {
+                                while(isActive) {
+                                    Log.d(
+                                        "Music",
+                                        "currentPosition: ${mediaSessionController!!.currentPosition}"
+                                    )
+                                    flChannelDu.invokeMethod("GetCurrentDuPos", mediaSessionController!!.currentPosition.toString())
+                                    delay(1000)
+                                }
+                            }
+                            if(!mediaSessionController!!.isPlaying()){
+                                kJob?.cancel("Not Playing the music")
                             }
                         }
-                        if(!isPlaying){
-                            kJob?.cancel("Not Playing the music")
+
+                        if(events.contains(MediaController.EVENT_MEDIA_METADATA_CHANGED) || events.contains(
+                                MediaController.EVENT_MEDIA_ITEM_TRANSITION)){
+                            flChannelMeta.invokeMethod("MediaChanged", mapOf<String,String>(
+                                "name" to mediaSessionController!!.mediaMetadata.title.toString(),
+                                "artist" to mediaSessionController!!.mediaMetadata.artist.toString(),
+                                "duration" to mediaSessionController!!.duration.toString()
+                            ))
                         }
                     }
 
-                    var currentMediaId: String? = null
-
-                    override fun onIsLoadingChanged(isLoading: Boolean) {
-                        Log.d("Music","has loaded: $isLoading .........................................................................................")
-
-                        if(!isLoading ){
-                            if(currentMediaId== null ||  mediaSessionController!!.currentMediaItem?.mediaId != currentMediaId){
-                                flChannelMeta.invokeMethod("MediaChanged", mapOf<String,String>(
-                                    "name" to mediaSessionController!!.mediaMetadata.title.toString(),
-                                    "artist" to mediaSessionController!!.mediaMetadata.artist.toString(),
-                                    "duration" to mediaSessionController!!.duration.toString()
-                                ))}
-                        }
-                    }
-
-                    override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
-//                 flChannelMeta.invokeMethod("MediaChanged", mapOf<String,String>(
-//                     "name" to mediaSessionController!!.mediaMetadata.title.toString(),
-//                     "artist" to mediaSessionController!!.mediaMetadata.artist.toString(),
-//                     "duration" to mediaSessionController!!.duration.toString()
-//                     ))
-                    }
                 })
 
 
@@ -144,7 +137,7 @@ class MainActivity : FlutterActivity(){
          requestAudioStoragePermission()
         flEngine = flutterEngine
 
-         val sPref : SharedPreferences = getSharedPreferences("Test", MODE_PRIVATE)
+         val sPref : SharedPreferences = getSharedPreferences(S_PREF_DATA, MODE_PRIVATE)
 
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
@@ -156,34 +149,14 @@ class MainActivity : FlutterActivity(){
                        openDirectoryPicker(result)
                 }
 
-                "loadMusicFromStorage" ->{
-                      val subDirUriString:String = call.arguments<String>() as String
-
-                        val subDirUri = subDirUriString.toUri()
-                         try{
-                             kJob?.cancel()
-                             kJob = CoroutineScope(Dispatchers.IO).launch {
-                                 val allContent = folderLoad.loadContentFromDirectories(applicationContext, subDirUri)
-                                 withContext(Dispatchers.Main) {
-                                     result.success(allContent)
-                                 }
-                                 this.cancel()
-                             }
-                         }catch (e:Exception){
-                             result.error("ERROR URI","Sub dir string is null : ${e.message}",null)
-                         }
-                }
-                "getContentCount" -> {
-                    val subDirUriS: String = call.arguments<String>() as String
-                    val count = folderLoad.getContentsCount(context, subDirUriS.toUri())
-
+                "getMusicCount" ->{
+                    val count = musicLoad.getMusicCount(this, selectedDirectory!!)
                     result.success(count)
-
                 }
+
                 "setSharePref" ->{
                     try {
                       val arg = call.arguments<Map<String, String>>()
-
                         sPref.edit {
                             putString(arg?.keys?.first(), arg?.values?.first())
                             apply()
@@ -239,7 +212,7 @@ class MainActivity : FlutterActivity(){
                    musicLoadService.toggleShuffleMode(mediaSessionController)
                 }
                 "getAudioArt" ->{
-                    val art = mediaSessionController!!.mediaMetadata.artworkData
+                    val art = musicLoadService.getAudioThumbnail(mediaSessionController)
                     result.success(art)
                 }
                 "nextMusic" ->{
@@ -253,6 +226,14 @@ class MainActivity : FlutterActivity(){
                         mediaSessionController
                     )
                     result.success(res)
+                }
+                "getNextMediaItemData" ->{
+                    val count = call.arguments<Int>()
+                    var mList:List<Map<String,Any?>> = listOf()
+                    if(count != null){
+                        mList = musicLoadService.getNextMediaItemMetaData(mediaSessionController, count);
+                    }
+                    result.success(mList)
                 }
 
             }
@@ -298,8 +279,12 @@ class MainActivity : FlutterActivity(){
                      it,
                      Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                  )
-                 val subDirs = folderLoad.loadSubDirectoriesFromRootDirectories(this,it)
-                 resultPending?.success(subDirs)
+
+                 selectedDirectory = it
+
+                 val allMusic = musicLoad.getMusicMetaDataFromDirectory(context, it)
+                 resultPending?.success(allMusic)
+
              }?:run {
                  resultPending?.error("NULL_URI","NO Uri found",null)
              }

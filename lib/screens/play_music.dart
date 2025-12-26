@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:muik/channels/android_channel.dart';
-import 'package:muik/channels/flutter_channel.dart';
+
 import 'package:muik/provider/content_provider.dart';
 import 'package:muik/widgets/music_art_card.dart';
 import 'package:muik/widgets/music_duration_indicator.dart';
@@ -18,7 +18,6 @@ class PlayMusic extends ConsumerStatefulWidget {
 
 class _PlayMusicState extends ConsumerState<PlayMusic> {
   final androidChannel = AndroidChannel();
-  final flutterChannel = FlutterChannel();
 
   @override
   Widget build(BuildContext context) {
@@ -54,6 +53,15 @@ class _PlayMusicState extends ConsumerState<PlayMusic> {
             Spacer(),
             PlayPauseWidget(size: size, playMusicContext: context),
             Spacer(),
+            ElevatedButton(
+                onPressed: () async {
+                  final data = await androidChannel.nextMediaItemsInfo(3);
+                  for (final e in data) {
+                    print(
+                        "${e.name}, ${e.uri}, ${e.duration}, ${e.art?.length}");
+                  }
+                },
+                child: Text("Data")),
           ],
         ),
       ),

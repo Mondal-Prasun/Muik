@@ -5,44 +5,34 @@ import 'package:muik/provider/content_provider.dart';
 class AndroidChannel {
   final _androidBackendChannel = MethodChannel("Android_Channel_Music");
 
-  Future<List<Subdirectory>?> pickDirectory() async {
+  Future<List<MusicInfo>> pickMusicDirectory() async {
+    final List<MusicInfo> musicList = [];
     try {
-      final dirUris = await _androidBackendChannel.invokeMethod(
+      final ml = await _androidBackendChannel.invokeMethod(
         "pickPreferredDirectory",
       );
 
-      List<Subdirectory> allDirs = [];
-
-      for (final d in dirUris) {
-        if (!d["name"].toString().startsWith(".")) {
-          allDirs.add(Subdirectory(name: d["name"], subDirUri: d["uri"]));
-        }
+      for (final e in ml) {
+        musicList.add(MusicInfo(
+          name: e["title"] as String,
+          uri: e["uri"] as String,
+        )
+          ..artist = e["artist"] as String
+          ..duration = "${e["duration"]}");
       }
 
-      return allDirs;
+      return musicList;
     } on PlatformException catch (e) {
       log(e.message!);
-      return null;
+      return <MusicInfo>[];
     }
   }
 
-  Future<List<dynamic>?> loadMusicFromStorage(String subDirUriString) async {
-    try {
-      final allContent = await _androidBackendChannel.invokeMethod(
-        "loadMusicFromStorage",
-        subDirUriString,
-      );
-      return allContent;
-    } on PlatformException catch (e) {
-      log(e.message!);
-      return null;
-    }
-  }
-
-  Future<int> getMusicCount(String subDirUri) async {
+  Future<int> getMusicCount() async {
     try {
       final int count = await _androidBackendChannel.invokeMethod(
-          "getContentCount", subDirUri);
+        "getMusicCount",
+      );
       return count;
     } on PlatformException catch (e) {
       log(e.message!);
@@ -74,9 +64,13 @@ class AndroidChannel {
 
   Future<Uint8List> getMusicArt(String audioUri) async {
     try {
-      final artByteArray = await _androidBackendChannel.invokeMethod(
-          "getAudioArt", audioUri) as Uint8List;
-      return artByteArray;
+      final artByteArray =
+          await _androidBackendChannel.invokeMethod("getAudioArt", audioUri);
+
+      if (artByteArray == null) {
+        return Uint8List.fromList([]);
+      }
+      return artByteArray as Uint8List;
     } on PlatformException catch (e) {
       log(e.message!);
       return Uint8List.fromList([]);
@@ -174,6 +168,29 @@ class AndroidChannel {
     } on PlatformException catch (e) {
       log(e.message!);
       return false;
+    }
+  }
+
+  Future<List<MusicInfo>> nextMediaItemsInfo(int maxCount) async {
+    try {
+      final List<MusicInfo> nextMusicListst = [];
+      final nMl = await _androidBackendChannel.invokeMethod(
+          "getNextMediaItemData", maxCount);
+      for (final m in nMl) {
+        nextMusicListst.add(MusicInfo(
+          name: m["name"] as String,
+          uri: m["uri"] as String,
+        )
+          ..title = m["name"] as String
+          ..artist = m["artist"] as String
+          ..duration = m["duration"] as String
+          ..art = m["artWork"] ?? Uint8List.fromList([]));
+      }
+
+      return nextMusicListst;
+    } on PlatformException catch (e) {
+      log(e.message!);
+      return [];
     }
   }
 }

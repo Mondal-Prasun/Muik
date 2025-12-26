@@ -7,7 +7,8 @@ import 'package:muik/provider/content_provider.dart';
 import 'package:muik/screens/standby_screen.dart';
 
 class LoadMusicDialog extends ConsumerStatefulWidget {
-  const LoadMusicDialog({super.key});
+  const LoadMusicDialog({super.key, required this.musicList});
+  final List<MusicInfo> musicList;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() =>
@@ -27,34 +28,18 @@ class _LoadMusicDialogState extends ConsumerState<LoadMusicDialog> {
     setState(() {
       _loadStarted = true;
     });
-    final allDirs = ref.read(subDirUriProvider);
 
-    for (final e in allDirs) {
-      final c = await _androidChannel.getMusicCount(e.subDirUri);
+    final c = await _androidChannel.getMusicCount();
+    setState(() {
+      _count = c;
+    });
+
+    for (final s in widget.musicList) {
+      loadDb.insertMusicInfo(s);
       setState(() {
-        _count += c;
+        _loadedMusicName = s.name;
+        _loadedCount++;
       });
-    }
-
-    for (final e in allDirs) {
-      final mMeta = await _androidChannel.loadMusicFromStorage(e.subDirUri);
-
-      for (final s in mMeta!) {
-        if (s["name"].toString().contains(RegExp(
-              r'^\d+\.\s*|(\.flac|\.mp3|\.wav|\.ogg|\.aac|\.m4a|\.alac|\.opus)$',
-              caseSensitive: false,
-            ))) {
-          loadDb.insertMusicInfo(s["name"] as String, s["uri"] as String);
-          setState(() {
-            _loadedMusicName = s["name"] as String;
-            _loadedCount++;
-          });
-        } else {
-          setState(() {
-            _loadedCount++;
-          });
-        }
-      }
     }
     print("$_loadedMusicName | $_loadedCount");
 

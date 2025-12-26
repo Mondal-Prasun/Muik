@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:muik/provider/content_provider.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
@@ -15,10 +16,10 @@ class LoadMusicDb {
   late final Database _db;
   final String _dbName = "Loaded_Audio";
   final String _createTable =
-      "CREATE TABLE IF NOT EXISTS Music (uuid TEXT PRIMARY KEY,name TEXT NOT NULL,uri TEXT NOT NULL);";
+      "CREATE TABLE IF NOT EXISTS Music (uuid TEXT PRIMARY KEY,name TEXT NOT NULL,uri TEXT NOT NULL, artist TEXT NOT NULL, duration REAL NOT NULL);";
 
   final String _insertValue =
-      " INSERT INTO Music (uuid, name, uri) VALUES (?, ?, ?);";
+      " INSERT INTO Music (uuid, name, uri, artist, duration) VALUES (?, ?, ?, ? ,?);";
 
   Future<void> _initSqlite() async {
     final dbPath = await getDatabasesPath();
@@ -30,10 +31,16 @@ class LoadMusicDb {
     });
   }
 
-  void insertMusicInfo(String name, String uri) async {
+  void insertMusicInfo(MusicInfo musicInfo) async {
     await _db.transaction((txn) async {
       String uuid = Uuid().v4();
-      await txn.rawInsert(_insertValue, <String>[uuid, name, uri]);
+      await txn.rawInsert(_insertValue, [
+        uuid,
+        musicInfo.name,
+        musicInfo.uri,
+        musicInfo.artist ?? "",
+        musicInfo.duration ?? 0,
+      ]);
     });
   }
 
@@ -47,8 +54,13 @@ class LoadMusicDb {
         final String uuid = qs.current["uuid"] as String;
         final String name = qs.current["name"] as String;
         final String uri = qs.current["uri"] as String;
+        final String artist = qs.current["artist"] as String;
+        final String duration = (qs.current["duration"] as double).toString();
 
-        querriedMusic.add(MusicInfo(name: name, uri: uri)..uuid = uuid);
+        querriedMusic.add(MusicInfo(name: name, uri: uri)
+          ..uuid = uuid
+          ..artist = artist
+          ..duration = duration);
       }
 
       qs.close();

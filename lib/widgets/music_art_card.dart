@@ -25,24 +25,24 @@ class _MusicArtCardState extends ConsumerState<MusicArtCard> {
     try {
       final art = await androidChannel.getMusicArt(uri);
       setState(() {
-		audioArt = art;
-			});
+        audioArt = art;
+      });
     } catch (e) {
       print(e);
     }
   }
 
- @override
+  @override
   void initState() {
-     audioArt = Uint8List.fromList([]);
-     final cUri = ref.read(currentMusicProvider);
+    audioArt = Uint8List.fromList([]);
+    final cUri = ref.read(currentMusicProvider);
     loadThumbnail(cUri.uri);
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
- final cUri = ref.read(currentMusicProvider);
+    final cUri = ref.read(currentMusicProvider);
 
     return Card(
       child: Container(
@@ -54,18 +54,20 @@ class _MusicArtCardState extends ConsumerState<MusicArtCard> {
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(10),
-          child: FutureBuilder(future: androidChannel.getMusicArt(cUri.uri), builder: (_, snapshot){
-	
-		if(snapshot.connectionState == ConnectionState.waiting){
-			return Image.asset("assets/placeholder.jpg");
-		}
-		if(snapshot.hasData){
-			return Image.memory(snapshot.data!);
-		}	
-		return Image.asset("assets/placeholder.jpg");
-
-
-	}),
+          child: FutureBuilder(
+              future: androidChannel.getMusicArt(cUri.uri),
+              builder: (_, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Image.asset("assets/placeholder.jpg");
+                }
+                if (snapshot.hasData) {
+                  if (snapshot.data!.isEmpty) {
+                    return Image.asset("assets/placeholder.jpg");
+                  }
+                  return Image.memory(snapshot.data!);
+                }
+                return Image.asset("assets/placeholder.jpg");
+              }),
         ),
       ),
     );

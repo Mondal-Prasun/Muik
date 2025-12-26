@@ -18,30 +18,21 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import java.util.Objects
 
 
 class MusicLoadService{
 
     private var kJob: Job? = null
 
-    fun getAudioThumbnail(context: Context,aUri : Uri) :ByteArray?{
-        val retriver = MediaMetadataRetriever()
-        var thumbnail: ByteArray? = null
+    fun getAudioThumbnail(mediaController: MediaController?) :ByteArray?{
         try{
-            retriver.setDataSource(context,aUri)
-            thumbnail = retriver.embeddedPicture
-            return thumbnail
-        }catch ( e:Exception){
-            Log.d("MediaService","Cannot get embaded thumbnail : ${e.message}")
-            return  null
-        }catch (e : IllegalStateException){
-            Log.d("MediaService", "Cannot get audio thumbnail :${e.message}")
+            return mediaController?.mediaMetadata?.artworkData
+        }catch (e: Exception){
+            Log.d("MusicLoadService","Cannot retrive music thumbnail")
             return null
-        }finally {
-            retriver.release()
         }
     }
-
 
     fun playSingleAudio(context: Context, uriString: String, mediaController: MediaController?){
         try{
@@ -166,6 +157,30 @@ class MusicLoadService{
         }catch(e: Exception){
             Log.d("MusicLoadService","Cannot change to prev music music:${e.message}")
             return false
+        }
+    }
+
+    fun getNextMediaItemMetaData(mediaController: MediaController?, count: Int): List<Map<String,Any?>>{
+        try{
+            val currentMusicIndex = mediaController!!.currentMediaItemIndex
+            val nextMediaItemList = mutableListOf<Map<String, Any?>>();2
+            var plusCount:Int = 1
+            while(plusCount <= count && mediaController.hasNextMediaItem()){
+                val item = mediaController.getMediaItemAt(currentMusicIndex+ plusCount);
+
+                nextMediaItemList.add(mapOf<String, Any?>(
+                    "name" to item.mediaMetadata.title.toString(),
+                    "artist" to item.mediaMetadata.artist.toString(),
+                    "duration" to item.mediaMetadata.durationMs.toString(),
+                    "artWork" to item.mediaMetadata.artworkData,
+                    "uri" to if (item.requestMetadata.mediaUri == null) "" else item.requestMetadata.mediaUri
+                ))
+                plusCount++
+            }
+            return nextMediaItemList;
+        }catch (e: Exception){
+            Log.d("MusicLoadService, ","Cannot get next music metadata:${e.message}")
+            return listOf()
         }
     }
 
