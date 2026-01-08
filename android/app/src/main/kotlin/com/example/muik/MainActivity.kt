@@ -90,6 +90,7 @@ class MainActivity : FlutterActivity(){
                 mediaSessionController?.addListener(object : Player.Listener{
 
                     override fun onEvents(player: Player, events: Player.Events) {
+
                         if(events.contains(MediaController.EVENT_PLAYBACK_STATE_CHANGED) || events.contains(MediaController.EVENT_IS_PLAYING_CHANGED)){
                             flChannelPlay.invokeMethod("IsKtMusicPlaying",mediaSessionController?.isPlaying())
                             kJob?.cancel()
@@ -192,6 +193,19 @@ class MainActivity : FlutterActivity(){
                     }
                 }
 
+                "getCurrentAudioMediaIndex" ->{
+                    val index = musicLoadService.getCurrentAudioMediaIndex(mediaSessionController)
+                    result.success(index)
+                }
+
+                "addNextAudioMediaItem" ->{
+                    val nextAudio = call.arguments<Map<Int, Map<String, String>>>() as Map<Int,Map<String, String>>
+                    musicLoadService.addNextAudioMediaItem(mediaSessionController,nextAudio.values.first(),nextAudio.keys.first())
+                }
+                "removeAudioMediaItem" ->{
+                    val removeIndex = call.arguments<Int>() as Int
+                    musicLoadService.removeAudioMediaItem(mediaSessionController, removeIndex)
+                }
                 "pauseMusic" ->{
                      musicLoadService.pauseAudio(mediaSessionController)
                 }
@@ -202,15 +216,7 @@ class MainActivity : FlutterActivity(){
                     val isPlaying = musicLoadService.isMusicPlaying(mediaSessionController)
                     result.success(isPlaying)
                 }
-                "shuffleMusic" ->{
-                    val audioUriStrings = call.arguments<List<Map<String,String>>>() as List<Map<String,String>>
-                    if(audioUriStrings.isNotEmpty()){
-                        musicLoadService.shuffleMusic(context,audioUriStrings, mediaSessionController)
-                    }
-                }
-                "toggleShuffleMode" ->{
-                   musicLoadService.toggleShuffleMode(mediaSessionController)
-                }
+
                 "getAudioArt" ->{
                     val art = musicLoadService.getAudioThumbnail(mediaSessionController)
                     result.success(art)
@@ -226,14 +232,6 @@ class MainActivity : FlutterActivity(){
                         mediaSessionController
                     )
                     result.success(res)
-                }
-                "getNextMediaItemData" ->{
-                    val count = call.arguments<Int>()
-                    var mList:List<Map<String,Any?>> = listOf()
-                    if(count != null){
-                        mList = musicLoadService.getNextMediaItemMetaData(mediaSessionController, count);
-                    }
-                    result.success(mList)
                 }
 
             }

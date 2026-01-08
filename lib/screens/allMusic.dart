@@ -7,6 +7,7 @@ import 'package:muik/channels/flutter_channel.dart';
 import 'package:muik/main.dart';
 import 'package:muik/provider/content_provider.dart';
 import 'package:muik/screens/play_music.dart';
+import 'package:muik/widgets/Floating_animated_button.dart';
 import 'package:muik/widgets/custom_search.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -49,26 +50,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (music.uri != "") {
       ref.read(currentMusicProvider.notifier).setCurrnetMusic(music);
       await androidChannel.playSingleMusic(music.uri);
-    }
-  }
-
-  void playListMusic() async {
-    if (allMusic != []) {
-      List<Map<String, String>> items = [];
-      for (final a in allMusic) {
-        items.add({"uri": a.uri, "name": a.name});
-      }
-      await androidChannel.playListMusic(items);
-    }
-  }
-
-  void shuffleMusic() async {
-    if (allMusic != []) {
-      List<Map<String, String>> items = [];
-      for (final a in allMusic) {
-        items.add({"uri": a.uri, "name": a.name});
-      }
-      await androidChannel.shuffleMusic(items);
     }
   }
 
@@ -123,19 +104,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       appBar: AppBar(
         title: CustomSearchBar(),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          shuffleMusic();
-          Navigator.of(
-            context,
-          ).push(MaterialPageRoute(builder: (_) => PlayMusic()));
-        },
-        child: Icon(
-          Icons.shuffle_rounded,
-          size: 25,
-          fontWeight: FontWeight.w900,
-        ),
-      ),
+      floatingActionButton: FloatingAnimatedButton(),
       body: allMusic.isEmpty
           ? FutureBuilder(
               future: loadDb.getLimitedMusic(musicLimit, musicLimitOffset),

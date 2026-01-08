@@ -5,6 +5,7 @@ import 'package:muik/channels/android_channel.dart';
 import 'package:muik/provider/content_provider.dart';
 import 'package:muik/widgets/music_art_card.dart';
 import 'package:muik/widgets/music_duration_indicator.dart';
+import 'package:muik/widgets/next_music_data.dart';
 import 'package:muik/widgets/play_pause_widget.dart';
 
 class PlayMusic extends ConsumerStatefulWidget {
@@ -23,6 +24,14 @@ class _PlayMusicState extends ConsumerState<PlayMusic> {
   Widget build(BuildContext context) {
     final MusicInfo currentMusic = ref.watch(currentMusicProvider);
     final Size size = MediaQuery.of(context).size;
+
+    void modalSheet(BuildContext ctx) async {
+      await showModalBottomSheet(
+          context: ctx,
+          builder: (_) {
+            return NextMusicData();
+          });
+    }
 
     return Scaffold(
       appBar: AppBar(title: Text("All Music"), centerTitle: true),
@@ -54,14 +63,10 @@ class _PlayMusicState extends ConsumerState<PlayMusic> {
             PlayPauseWidget(size: size, playMusicContext: context),
             Spacer(),
             ElevatedButton(
-                onPressed: () async {
-                  final data = await androidChannel.nextMediaItemsInfo(3);
-                  for (final e in data) {
-                    print(
-                        "${e.name}, ${e.uri}, ${e.duration}, ${e.art?.length}");
-                  }
+                onPressed: () {
+                  modalSheet(context);
                 },
-                child: Text("Data")),
+                child: Text("Up Next")),
           ],
         ),
       ),

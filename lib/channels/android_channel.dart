@@ -93,17 +93,31 @@ class AndroidChannel {
     }
   }
 
-  Future<void> shuffleMusic(List<Map<String, String>> listMusic) async {
+  Future<int?> getCurrentMusicIndex() async {
     try {
-      await _androidBackendChannel.invokeMethod("shuffleMusic", listMusic);
+      final index = await _androidBackendChannel
+          .invokeMethod("getCurrentAudioMediaIndex");
+      return index;
+    } on PlatformException catch (e) {
+      log(e.message!);
+      return null;
+    }
+  }
+
+  Future<void> addNextMusicInList(int setIndex, MusicInfo musicInfo) async {
+    try {
+      await _androidBackendChannel.invokeMethod("addNextAudioMediaItem", {
+        setIndex: musicInfo.toMap(),
+      });
     } on PlatformException catch (e) {
       log(e.message!);
     }
   }
 
-  Future<void> toggleShuffle() async {
+  Future<void> removeMusicFromList(int removeIndex) async {
     try {
-      await _androidBackendChannel.invokeMethod("toggleShuffleMode");
+      await _androidBackendChannel.invokeMethod(
+          "removeAudioMediaItem", removeIndex);
     } on PlatformException catch (e) {
       log(e.message!);
     }

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -15,6 +17,14 @@ class MusicInfo {
   String? artist;
   String? duration;
   Uint8List? art;
+
+  Map<String, String> toMap() {
+    return {
+      "name": name,
+      "uri": uri,
+      "artist": artist ?? "Unknown",
+    };
+  }
 }
 
 class _CurrentMusicNotifier extends Notifier<MusicInfo> {
@@ -68,6 +78,13 @@ class _AllMusicListNotifier extends Notifier<List<MusicInfo>> {
     }
   }
 
+  List<MusicInfo> shuffleMusic() {
+    int seed = DateTime.now().millisecond;
+
+    final shuffledList = state.toList()..shuffle(Random(seed));
+    return shuffledList;
+  }
+
   void reset() {
     state = [];
   }
@@ -88,3 +105,16 @@ class _SearchedAudioNotifier extends Notifier<MusicInfo> {
 final searchedMusicProvider =
     NotifierProvider<_SearchedAudioNotifier, MusicInfo>(
         _SearchedAudioNotifier.new);
+
+class _CurrentMusicListNotifier extends Notifier<List<MusicInfo>> {
+  @override
+  List<MusicInfo> build() => [];
+
+  void setList(List<MusicInfo> musicList) {
+    state = musicList;
+  }
+}
+
+final currentPlayingListProvider =
+    NotifierProvider<_CurrentMusicListNotifier, List<MusicInfo>>(
+        _CurrentMusicListNotifier.new);

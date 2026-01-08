@@ -49,11 +49,13 @@ class MusicLoadService{
     fun playListAudio(audioList : List<Map<String,String>>, mediaController: MediaController?){
 
         try{
+            mediaController?.clearMediaItems()
             val items:MutableList<MediaItem> = mutableListOf<MediaItem>()
             for(i in audioList){
 
                    val metaData = MediaMetadata.Builder()
-                       .setTitle("Test")
+                       .setTitle(i["name"])
+                       .setArtist(i["artist"])
                        .build()
                   val  item = MediaItem.Builder()
                        .setUri(i["uri"])
@@ -71,6 +73,36 @@ class MusicLoadService{
 
         }catch (e:Exception){
             Log.d("MusicLoadService","Cannot pause music:${e.message}")
+        }
+    }
+
+    fun getCurrentAudioMediaIndex(mediaController: MediaController?):Int?{
+        return mediaController?.currentMediaItemIndex
+    }
+
+    fun addNextAudioMediaItem(mediaController: MediaController?, nextAudio :Map<String,String>, setIndex: Int){
+            try {
+                val metaData = MediaMetadata.Builder()
+                    .setTitle(nextAudio["name"])
+                    .setArtist(nextAudio["artist"])
+                    .build()
+                val  item = MediaItem.Builder()
+                    .setUri(nextAudio["uri"])
+                    .setMediaMetadata(metaData)
+                    .build()
+                mediaController?.addMediaItem(setIndex, item)
+
+            }catch(e: Exception) {
+                Log.d("MusicLoadService", "Cannot set next Music:${e.message}")
+            }
+    }
+
+    fun removeAudioMediaItem(mediaController: MediaController?, removeIndex:Int){
+        try{
+            Log.d("MusicLoadService", "Removed index: $removeIndex..............")
+            mediaController?.removeMediaItem(removeIndex)
+        }catch (e: Exception){
+            Log.d("MusicLoadService", "Cannot remove music from list:${e.message}")
         }
     }
 
@@ -100,45 +132,6 @@ class MusicLoadService{
         return mediaController!!.isPlaying
     }
 
-    fun shuffleMusic(context: Context, audioList: List<Map<String,String>>, mediaController: MediaController?){
-
-        try{
-            mediaController?.clearMediaItems()
-            val items:MutableList<MediaItem> = mutableListOf<MediaItem>()
-            for(i in audioList){
-                    val metaData = MediaMetadata.Builder()
-                        .setTitle(i["name"])
-//                        .setArtworkData(getAudioThumbnail(context, i["uri"]!!.toUri()),
-//                            MediaMetadata.PICTURE_TYPE_FRONT_COVER )
-                        .build()
-                    val item = MediaItem.Builder()
-                        .setUri(i["uri"])
-                        .setMediaMetadata(metaData)
-                        .build()
-
-                items.add(item)
-            }
-            mediaController?.shuffleModeEnabled = true
-            mediaController?.setMediaItems(items)
-            mediaController?.prepare()
-            mediaController?.play()
-
-        }catch (e:Exception){
-            Log.d("MusicLoadService","Cannot Shuffle music:${e.message}")
-        }
-    }
-
-    fun toggleShuffleMode(mediaController: MediaController?){
-        try{
-            if(mediaController?.shuffleModeEnabled == true){
-                mediaController.shuffleModeEnabled = false
-            }else{
-                mediaController?.shuffleModeEnabled = true
-            }
-        }catch (e:Exception){
-            Log.d("MusicLoadService","Cannot toggle Shuffle music:${e.message}")
-        }
-    }
 
     fun nextAudio(mediaController: MediaController?): Boolean{
         try{
@@ -159,31 +152,6 @@ class MusicLoadService{
             return false
         }
     }
-
-    fun getNextMediaItemMetaData(mediaController: MediaController?, count: Int): List<Map<String,Any?>>{
-        try{
-            val currentMusicIndex = mediaController!!.currentMediaItemIndex
-            val nextMediaItemList = mutableListOf<Map<String, Any?>>();2
-            var plusCount:Int = 1
-            while(plusCount <= count && mediaController.hasNextMediaItem()){
-                val item = mediaController.getMediaItemAt(currentMusicIndex+ plusCount);
-
-                nextMediaItemList.add(mapOf<String, Any?>(
-                    "name" to item.mediaMetadata.title.toString(),
-                    "artist" to item.mediaMetadata.artist.toString(),
-                    "duration" to item.mediaMetadata.durationMs.toString(),
-                    "artWork" to item.mediaMetadata.artworkData,
-                    "uri" to if (item.requestMetadata.mediaUri == null) "" else item.requestMetadata.mediaUri
-                ))
-                plusCount++
-            }
-            return nextMediaItemList;
-        }catch (e: Exception){
-            Log.d("MusicLoadService, ","Cannot get next music metadata:${e.message}")
-            return listOf()
-        }
-    }
-
 
 
 }
