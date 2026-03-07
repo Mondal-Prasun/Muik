@@ -26,19 +26,19 @@ class _NextMusicDataState extends ConsumerState<NextMusicData> {
         return Dismissible(
           key: Key(currentMusicList[index].name),
           onDismissed: (direction) async {
-            print(
-                "removed index: ${index}................................................");
-            await androidChannel.removeMusicFromList(index);
-            final ml = currentMusicList;
+            final ml = [...currentMusicList];
             ml.removeAt(index);
 
             ref.read(currentPlayingListProvider.notifier).setList(ml);
+            setState(() {});
+
+            await androidChannel.removeMusicFromList(index);
           },
           background: Container(
             color: Colors.deepOrange,
           ),
           child: ListTile(
-            tileColor: currentMusicList[index].name == currentPlaying.title
+            tileColor: currentMusicList[index].name == currentPlaying.name
                 ? Colors.cyan
                 : Colors.white,
             leading: Text("${index + 1}|"),

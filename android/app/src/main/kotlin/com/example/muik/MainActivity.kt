@@ -111,11 +111,12 @@ class MainActivity : FlutterActivity(){
 
                         if(events.contains(MediaController.EVENT_MEDIA_METADATA_CHANGED) || events.contains(
                                 MediaController.EVENT_MEDIA_ITEM_TRANSITION)){
-                            flChannelMeta.invokeMethod("MediaChanged", mapOf<String,String>(
-                                "name" to mediaSessionController!!.mediaMetadata.title.toString(),
-                                "artist" to mediaSessionController!!.mediaMetadata.artist.toString(),
-                                "duration" to mediaSessionController!!.duration.toString()
-                            ))
+
+                            Log.d("MusicChanged", "${mediaSessionController!!.mediaMetadata.title}..................................")
+
+                            val currentMediaItemIndex : Int = mediaSessionController!!.currentMediaItemIndex
+
+                            flChannelMeta.invokeMethod("MediaChanged", currentMediaItemIndex)
                         }
                     }
 
@@ -179,12 +180,12 @@ class MainActivity : FlutterActivity(){
                     }
                 }
 
-                "startSingleMusic" ->{
-                    val sUri:String? = call.arguments<String>()
-                    if(sUri!= null) {
-                        musicLoadService.playSingleAudio(context,sUri, mediaSessionController)
-                    }
-                }
+//                "startSingleMusic" ->{
+//                    val sUri:String? = call.arguments<String>()
+//                    if(sUri!= null) {
+//                        musicLoadService.playSingleAudio(context,sUri, mediaSessionController)
+//                    }
+//                }
 
                 "startMusicList" ->{
                     val audioUriStrings = call.arguments<List<Map<String,String>>>() as List<Map<String,String>>
@@ -199,8 +200,8 @@ class MainActivity : FlutterActivity(){
                 }
 
                 "addNextAudioMediaItem" ->{
-                    val nextAudio = call.arguments<Map<Int, Map<String, String>>>() as Map<Int,Map<String, String>>
-                    musicLoadService.addNextAudioMediaItem(mediaSessionController,nextAudio.values.first(),nextAudio.keys.first())
+                    val nextAudio = call.arguments< Map<String, String>>() as Map<String, String>
+                    musicLoadService.addNextAudioMediaItem(mediaSessionController,nextAudio)
                 }
                 "removeAudioMediaItem" ->{
                     val removeIndex = call.arguments<Int>() as Int
@@ -232,6 +233,11 @@ class MainActivity : FlutterActivity(){
                         mediaSessionController
                     )
                     result.success(res)
+                }
+                "seekTo" ->{
+                    val seekValue = call.arguments<Int>()
+                    val sV = seekValue!!.toLong()
+                    musicLoadService.seekTo(mediaSessionController, sV)
                 }
 
             }

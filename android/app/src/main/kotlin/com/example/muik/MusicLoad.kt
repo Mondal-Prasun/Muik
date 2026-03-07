@@ -38,9 +38,10 @@ class MusicLoad {
                  val id = cursor.getLong(idCol)
 
                  val uri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id)
-                 val title = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE))
-                 val artist = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST))
-                 val duration = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION))
+                 val title = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE))
+                 val artist = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST))
+                 val duration = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION))
+
 
                  audioList.add(mapOf<String, String>(
                      "uri" to uri.toString(),

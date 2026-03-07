@@ -1,9 +1,12 @@
+import 'dart:typed_data';
+
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:muik/channels/android_channel.dart';
 import 'package:muik/channels/flutter_channel.dart';
 import 'package:muik/provider/content_provider.dart';
 import 'package:muik/screens/allMusic.dart';
-import 'package:muik/screens/mainScreen.dart';
 import 'package:muik/screens/play_music.dart';
 import 'package:muik/widgets/current_audio_island.dart';
 
@@ -28,17 +31,20 @@ class _StandByScreenState extends ConsumerState<StandbyScreen> {
     });
   }
 
-  dynamic mediaChanged(dynamic meta) {
-    print(
-      "changed music : ${meta["name"]} | ${meta["artist"]} | ${meta["duration"]}",
-    );
-    final info = ref.read(currentMusicProvider);
+  dynamic mediaChanged(dynamic currentChangedIndex) async {
+    final int i = currentChangedIndex as int;
+
+    final cMusic =
+        ref.read(currentPlayingListProvider.notifier).getIndexedMusic(i);
+
+    final artWork = await AndroidChannel().getMusicArt();
+
     ref.read(currentMusicProvider.notifier).setCurrnetMusic(
-          MusicInfo(name: info.name, uri: info.uri)
-            //..uuid = info.uuid
-            ..title = meta["name"] as String
-            ..artist = meta["artist"]
-            ..duration = meta["duration"],
+          MusicInfo(name: cMusic.name, uri: cMusic.uri)
+            ..uuid = cMusic.uuid
+            ..artist = cMusic.artist
+            ..duration = cMusic.duration
+            ..art = artWork,
         );
   }
 
@@ -60,7 +66,7 @@ class _StandByScreenState extends ConsumerState<StandbyScreen> {
       children: [
         HomeScreen(),
         Positioned(
-          bottom: 40,
+          bottom: 100,
           left: 0,
           right: 0,
           child: GestureDetector(
@@ -70,7 +76,7 @@ class _StandByScreenState extends ConsumerState<StandbyScreen> {
               ).push(MaterialPageRoute(builder: (_) => PlayMusic()));
             },
             child: CurrentAudioIsland(
-              title: currentMusic.title ?? "Unkown",
+              title: currentMusic.name,
               artist: currentMusic.artist ?? "UNKnown",
               isPlaying: isMusicPlaying,
             ),

@@ -1,4 +1,3 @@
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:muik/provider/content_provider.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
@@ -18,8 +17,14 @@ class LoadMusicDb {
   final String _createTable =
       "CREATE TABLE IF NOT EXISTS Music (uuid TEXT PRIMARY KEY,name TEXT NOT NULL,uri TEXT NOT NULL, artist TEXT NOT NULL, duration REAL NOT NULL);";
 
+  final String _createFavoriteTable =
+      "CREATE TABLE IF NOT EXISTS Favorite (uuid TEXT PRIMARY KEY,name TEXT NOT NULL,uri TEXT NOT NULL, artist TEXT NOT NULL, duration REAL NOT NULL);";
+
   final String _insertValue =
       " INSERT INTO Music (uuid, name, uri, artist, duration) VALUES (?, ?, ?, ? ,?);";
+
+  final String _insertFavoriteValue =
+      " INSERT INTO Favorite (uuid, name, uri, artist, duration) VALUES (?, ?, ?, ? ,?);";
 
   Future<void> _initSqlite() async {
     final dbPath = await getDatabasesPath();
@@ -28,6 +33,7 @@ class LoadMusicDb {
     _db = await openDatabase(path, version: 1,
         onCreate: (Database d, int _) async {
       await d.execute(_createTable);
+      await d.execute(_createFavoriteTable);
     });
   }
 
@@ -35,6 +41,19 @@ class LoadMusicDb {
     await _db.transaction((txn) async {
       String uuid = Uuid().v4();
       await txn.rawInsert(_insertValue, [
+        uuid,
+        musicInfo.name,
+        musicInfo.uri,
+        musicInfo.artist ?? "",
+        musicInfo.duration ?? 0,
+      ]);
+    });
+  }
+
+  void insertFavoriteMusicInfo(MusicInfo musicInfo) async {
+    await _db.transaction((txn) async {
+      String uuid = Uuid().v4();
+      await txn.rawInsert(_insertFavoriteValue, [
         uuid,
         musicInfo.name,
         musicInfo.uri,
@@ -67,5 +86,37 @@ class LoadMusicDb {
     });
 
     return querriedMusic;
+  }
+
+  Future<List<MusicInfo>> getAllFavoriteMusic() async {
+    List<MusicInfo> querriedMusic = [];
+
+    await _db.transaction((txn) async {
+      QueryCursor qs = await txn.queryCursor("Favorite");
+
+      while (await qs.moveNext()) {
+        final String uuid = qs.current["uuid"] as String;
+        final String name = qs.current["name"] as String;
+        final String uri = qs.current["uri"] as String;
+        final String artist = qs.current["artist"] as String;
+        final String duration = (qs.current["duration"] as double).toString();
+
+        querriedMusic.add(MusicInfo(name: name, uri: uri)
+          ..uuid = uuid
+          ..artist = artist
+          ..duration = duration);
+      }
+
+      qs.close();
+    });
+
+    return querriedMusic;
+  }
+
+  Future<void> deleteFromFavorite(MusicInfo musicInfo) async {
+    await _db.transaction((txn) async {
+      await txn
+          .delete("Favorite", where: 'uuid = ?', whereArgs: [musicInfo.uuid]);
+    });
   }
 }

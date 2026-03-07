@@ -62,26 +62,18 @@ class AndroidChannel {
     }
   }
 
-  Future<Uint8List> getMusicArt(String audioUri) async {
+  Future<Uint8List> getMusicArt() async {
     try {
       final artByteArray =
-          await _androidBackendChannel.invokeMethod("getAudioArt", audioUri);
+          await _androidBackendChannel.invokeMethod("getAudioArt");
 
       if (artByteArray == null) {
         return Uint8List.fromList([]);
       }
-      return artByteArray as Uint8List;
+      return Uint8List.fromList(artByteArray);
     } on PlatformException catch (e) {
       log(e.message!);
       return Uint8List.fromList([]);
-    }
-  }
-
-  Future<void> playSingleMusic(String musicUri) async {
-    try {
-      await _androidBackendChannel.invokeMethod("startSingleMusic", musicUri);
-    } on PlatformException catch (e) {
-      log(e.message!);
     }
   }
 
@@ -104,11 +96,12 @@ class AndroidChannel {
     }
   }
 
-  Future<void> addNextMusicInList(int setIndex, MusicInfo musicInfo) async {
+  Future<void> addNextMusicInList(MusicInfo musicInfo) async {
     try {
-      await _androidBackendChannel.invokeMethod("addNextAudioMediaItem", {
-        setIndex: musicInfo.toMap(),
-      });
+      await _androidBackendChannel.invokeMethod(
+        "addNextAudioMediaItem",
+        musicInfo.toMap(),
+      );
     } on PlatformException catch (e) {
       log(e.message!);
     }
@@ -195,7 +188,6 @@ class AndroidChannel {
           name: m["name"] as String,
           uri: m["uri"] as String,
         )
-          ..title = m["name"] as String
           ..artist = m["artist"] as String
           ..duration = m["duration"] as String
           ..art = m["artWork"] ?? Uint8List.fromList([]));
@@ -205,6 +197,14 @@ class AndroidChannel {
     } on PlatformException catch (e) {
       log(e.message!);
       return [];
+    }
+  }
+
+  Future<void> seekTo(int seekValue) async {
+    try {
+      await _androidBackendChannel.invokeMethod("seekTo", seekValue);
+    } on PlatformException catch (e) {
+      log(e.message!);
     }
   }
 }

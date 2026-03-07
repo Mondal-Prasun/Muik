@@ -80,7 +80,7 @@ class MusicLoadService{
         return mediaController?.currentMediaItemIndex
     }
 
-    fun addNextAudioMediaItem(mediaController: MediaController?, nextAudio :Map<String,String>, setIndex: Int){
+    fun addNextAudioMediaItem(mediaController: MediaController?, nextAudio :Map<String,String>){
             try {
                 val metaData = MediaMetadata.Builder()
                     .setTitle(nextAudio["name"])
@@ -90,14 +90,16 @@ class MusicLoadService{
                     .setUri(nextAudio["uri"])
                     .setMediaMetadata(metaData)
                     .build()
-                mediaController?.addMediaItem(setIndex, item)
+
+                val currentIndex = mediaController?.currentMediaItemIndex
+                mediaController?.addMediaItem(currentIndex!! + 1, item)
 
             }catch(e: Exception) {
                 Log.d("MusicLoadService", "Cannot set next Music:${e.message}")
             }
     }
 
-    fun removeAudioMediaItem(mediaController: MediaController?, removeIndex:Int){
+    fun removeAudioMediaItem(mediaController: MediaController?, removeIndex:Int, ){
         try{
             Log.d("MusicLoadService", "Removed index: $removeIndex..............")
             mediaController?.removeMediaItem(removeIndex)
@@ -105,6 +107,8 @@ class MusicLoadService{
             Log.d("MusicLoadService", "Cannot remove music from list:${e.message}")
         }
     }
+
+
 
     fun pauseAudio(mediaController: MediaController?){
         try{
@@ -151,6 +155,16 @@ class MusicLoadService{
             Log.d("MusicLoadService","Cannot change to prev music music:${e.message}")
             return false
         }
+    }
+
+    fun seekTo(mediaController: MediaController?, seekValue : Long){
+         try{
+             mediaController?.seekTo(seekValue)
+         }catch (
+             e: Exception
+         ){
+             Log.d("MusicLoadService","Cannot seek music : ${e.message}")
+         }
     }
 
 

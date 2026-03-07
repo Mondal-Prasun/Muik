@@ -6,17 +6,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class MusicInfo {
   MusicInfo({required this.name, required this.uri})
       : uuid = null,
-        title = null,
         artist = null,
         duration = null,
-        art = null;
+        art = Uint8List.fromList([]);
   String? uuid;
   final String name;
   final String uri;
-  String? title;
   String? artist;
   String? duration;
-  Uint8List? art;
+  Uint8List art;
 
   Map<String, String> toMap() {
     return {
@@ -112,6 +110,10 @@ class _CurrentMusicListNotifier extends Notifier<List<MusicInfo>> {
 
   void setList(List<MusicInfo> musicList) {
     state = musicList;
+  }
+
+  MusicInfo getIndexedMusic(int index) {
+    return state[index];
   }
 }
 

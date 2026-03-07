@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 import 'package:muik/channels/android_channel.dart';
 
 class CurrentAudioIsland extends StatelessWidget {
@@ -42,43 +43,47 @@ class CurrentAudioIsland extends StatelessWidget {
     return Row(
       children: [
         Spacer(),
-        Container(
-          height: islandHeight,
-          width: islandWidth,
-          decoration: BoxDecoration(
-            color: Colors.cyan,
-            borderRadius: BorderRadius.circular(30),
-          ),
-          child: Row(
-            spacing: 10,
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              CircleAvatar(
-                child: IconButton(
-                  onPressed: playPauseAudio,
-                  icon: Icon(
-                    isPlaying
-                        ? Icons.pause_circle_outlined
-                        : Icons.play_arrow_outlined,
+        LiquidGlassLayer(
+            settings:
+                LiquidGlassSettings(glassColor: Colors.cyan, thickness: 30),
+            child: LiquidGlass(
+                shape: LiquidRoundedRectangle(borderRadius: 30),
+                child: Container(
+                  height: islandHeight,
+                  width: islandWidth,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(30),
                   ),
-                ),
-              ),
-              SizedBox(
-                height: islandHeight,
-                width: 150,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title, style: islandTextStyle(14)),
-                    Text(artist, style: islandTextStyle(12)),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
+                  child: Row(
+                    spacing: 10,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      CircleAvatar(
+                        child: IconButton(
+                          onPressed: playPauseAudio,
+                          icon: Icon(
+                            isPlaying
+                                ? Icons.pause_circle_outlined
+                                : Icons.play_arrow_outlined,
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        height: islandHeight,
+                        width: 150,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(title, style: islandTextStyle(14)),
+                            Text(artist, style: islandTextStyle(12)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ))),
         Spacer(),
       ],
     );

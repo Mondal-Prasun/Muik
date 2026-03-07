@@ -47,10 +47,16 @@ class _PlayMusicState extends ConsumerState<PlayMusic> {
               crossAxisAlignment: CrossAxisAlignment.center,
               spacing: 3,
               children: [
-                Text(
-                  currentMusic.title ?? "Unknown",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
+                SizedBox(
+                    width: 200,
+                    child: Center(
+                        child: Text(
+                      currentMusic.name,
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      softWrap: true,
+                      overflow: TextOverflow.ellipsis,
+                    ))),
                 Text(
                   currentMusic.artist ?? "UnKnown",
                   style: TextStyle(fontSize: 11),

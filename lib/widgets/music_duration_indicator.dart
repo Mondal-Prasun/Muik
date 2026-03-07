@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:muik/channels/android_channel.dart';
 import 'package:muik/channels/flutter_channel.dart';
 import 'package:muik/provider/content_provider.dart';
 
@@ -31,70 +32,18 @@ class _MusicDuarationIndicator extends ConsumerState<MusicDurationIndicator> {
   int updateDuMin = 0;
   int updateDuSec = 00;
 
-  int indCount = 0;
-  double updatedOffset = 0;
-
-  double prevDu = 0;
+  double sliderValue = 0.0;
 
   dynamic getCurrentPos(dynamic pos) {
-    double posOffset = audioDuration / indicatorCount;
-    // print("...............flutter audio pos: $pos");
     final double cDu = double.parse(pos.toString());
 
     final int duInMinute = ((cDu / 1000) / 60).floor().toInt();
     final int duInSeconds = ((cDu % (60 * 1000)) / 1000).toInt();
+
     setState(() {
-      updateDuMin = duInMinute;
+      sliderValue = cDu;
       updateDuSec = duInSeconds;
-
-      int neededIndCount = (cDu / posOffset).floor();
-
-      if (cDu < prevDu) {
-        print("yep its small ................................");
-        for (int i = 0; i <= neededIndCount; i++) {
-          indCount = i;
-          indiCators[indCount] = _IndicatorLines(
-            height: randHeightList[indCount],
-            width: indicatorWidth,
-            color: Colors.black,
-          );
-
-          updatedOffset = posOffset * indCount;
-        }
-        for (int i = neededIndCount + 1; i <= indicatorCount; i++) {
-          indiCators[indCount] = _IndicatorLines(
-            height: randHeightList[indCount],
-            width: indicatorWidth,
-            color: Colors.white,
-          );
-        }
-      }
-
-      if (neededIndCount > indCount) {
-        for (int i = 0; i <= neededIndCount; i++) {
-          indiCators[indCount] = _IndicatorLines(
-            height: randHeightList[indCount],
-            width: indicatorWidth,
-            color: Colors.black,
-          );
-
-          indCount = i;
-          updatedOffset = posOffset * indCount;
-        }
-      } else {
-        if (cDu > updatedOffset) {
-          // print("going here");
-          indiCators[indCount] = _IndicatorLines(
-            height: randHeightList[indCount],
-            width: indicatorWidth,
-            color: Colors.black,
-          );
-
-          indCount = indCount + 1;
-          updatedOffset = posOffset * indCount;
-        }
-      }
-      prevDu = cDu;
+      updateDuMin = duInMinute;
     });
   }
 
@@ -116,25 +65,28 @@ class _MusicDuarationIndicator extends ConsumerState<MusicDurationIndicator> {
       audioDuration = double.parse(currentMusic.duration!);
     }
 
-    final double height = widget.size.height / 10;
+    final double height = widget.size.height / 13;
     final double width = widget.size.width - 50;
     indicatorCount = ((width - 190) / indicatorWidth).toInt();
 
     if (randHeightList.isEmpty) {
       for (int i = 0; i < indicatorCount; i++) {
         final randHeight =
-            (5 + rand.nextInt(height.floor().toInt())).toDouble();
+            (2 + rand.nextInt(height.floor().toInt())).toDouble();
         randHeightList.add(randHeight);
       }
     }
 
     if (indiCators.isEmpty) {
+      int r = Random().nextInt(255);
+      int g = Random().nextInt(255);
+      int b = Random().nextInt(255);
       for (int i = 0; i < indicatorCount; i++) {
         indiCators.add(
           _IndicatorLines(
             height: randHeightList[i],
             width: indicatorWidth,
-            color: Colors.white,
+            color: Color.fromRGBO(r, g, b, 1),
           ),
         );
       }
@@ -152,6 +104,18 @@ class _MusicDuarationIndicator extends ConsumerState<MusicDurationIndicator> {
           decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
           child: Row(children: [...indiCators]),
         ),
+        SliderTheme(
+            data: SliderThemeData(
+              thumbShape: SliderComponentShape.noThumb,
+            ),
+            child: Slider(
+              value: sliderValue,
+              min: 0.0,
+              max: audioDuration,
+              onChanged: (value) async {
+                await AndroidChannel().seekTo(value.round());
+              },
+            )),
         SizedBox(
           width: width,
           child: Row(
