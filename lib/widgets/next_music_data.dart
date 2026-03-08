@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:muik/channels/android_channel.dart';
 import 'package:muik/provider/content_provider.dart';
+import 'package:rive_animated_icon/rive_animated_icon.dart';
 
 class NextMusicData extends ConsumerStatefulWidget {
   const NextMusicData({super.key});
@@ -14,38 +15,50 @@ class _NextMusicDataState extends ConsumerState<NextMusicData> {
 
   @override
   Widget build(BuildContext context) {
-    final currentMusicList = ref.read(currentPlayingListProvider);
-    final currentPlaying = ref.read(currentMusicProvider);
+    final currentMusicList = ref.watch(currentPlayingListProvider);
+    final currentPlaying = ref.watch(currentMusicProvider);
 
-    return ListView.builder(
-      itemCount: currentMusicList.length,
-      itemBuilder: (ctx, index) {
-        //TODO:Change this thing
-        // print(
-        // "${currentMusicList[index].name} | ${currentPlaying.title}............................................................");
-        return Dismissible(
-          key: Key(currentMusicList[index].name),
-          onDismissed: (direction) async {
-            final ml = [...currentMusicList];
-            ml.removeAt(index);
+    return Container(
+      color: Theme.of(context).colorScheme.primary,
+      child: ListView.builder(
+        itemCount: currentMusicList.length,
+        itemBuilder: (ctx, index) {
+          return Dismissible(
+            key: Key(currentMusicList[index].name),
+            onDismissed: (direction) async {
+              final ml = [...currentMusicList];
+              ml.removeAt(index);
 
-            ref.read(currentPlayingListProvider.notifier).setList(ml);
-            setState(() {});
+              ref.read(currentPlayingListProvider.notifier).setList(ml);
+              setState(() {});
 
-            await androidChannel.removeMusicFromList(index);
-          },
-          background: Container(
-            color: Colors.deepOrange,
-          ),
-          child: ListTile(
-            tileColor: currentMusicList[index].name == currentPlaying.name
-                ? Colors.cyan
-                : Colors.white,
-            leading: Text("${index + 1}|"),
-            title: Text(currentMusicList[index].name),
-          ),
-        );
-      },
+              await androidChannel.removeMusicFromList(index);
+            },
+            background: Container(
+              color: Colors.deepOrange,
+            ),
+            child: ListTile(
+              tileColor: currentMusicList[index].name == currentPlaying.name
+                  ? Colors.white
+                  // : Theme.of(context).colorScheme.primary,
+                  : Colors.red,
+              leading: RiveAnimatedIcon(
+                riveIcon: RiveIcon.sound,
+                strokeWidth: 6,
+                loopAnimation: true,
+                enableAbsorbPointer: true,
+              ),
+              title: Text(
+                currentMusicList[index].name,
+                style: TextStyle(
+                    color: currentMusicList[index].name == currentPlaying.name
+                        ? Colors.yellow
+                        : Colors.white),
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }

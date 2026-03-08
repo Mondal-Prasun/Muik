@@ -15,8 +15,10 @@ class _CustomSearchBarState extends ConsumerState<CustomSearchBar> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
+      width: 200,
+      alignment: Alignment.centerRight,
       child: SearchBar(
+        hintText: "search",
         onTap: () {
           setState(() {
             isTapped = !isTapped;

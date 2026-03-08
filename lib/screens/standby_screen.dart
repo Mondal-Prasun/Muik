@@ -21,11 +21,13 @@ class StandbyScreen extends ConsumerStatefulWidget {
 
 class _StandByScreenState extends ConsumerState<StandbyScreen> {
   bool isMusicPlaying = false;
+  bool isShowing = false;
 
   final flutterChannel = FlutterChannel();
 
   dynamic mediaPausedOrResumeNotification(dynamic isPlay) {
     setState(() {
+      isShowing = true;
       isMusicPlaying = isPlay as bool;
       ref.read(isLandMusicPlayingProvider.notifier).set(isMusicPlaying);
     });
@@ -69,16 +71,19 @@ class _StandByScreenState extends ConsumerState<StandbyScreen> {
           bottom: 100,
           left: 0,
           right: 0,
-          child: GestureDetector(
-            onTap: () {
-              Navigator.of(
-                context,
-              ).push(MaterialPageRoute(builder: (_) => PlayMusic()));
-            },
-            child: CurrentAudioIsland(
-              title: currentMusic.name,
-              artist: currentMusic.artist ?? "UNKnown",
-              isPlaying: isMusicPlaying,
+          child: Visibility(
+            visible: isShowing,
+            child: GestureDetector(
+              onTap: () {
+                Navigator.of(
+                  context,
+                ).push(MaterialPageRoute(builder: (_) => PlayMusic()));
+              },
+              child: CurrentAudioIsland(
+                title: currentMusic.name,
+                artist: currentMusic.artist ?? "UNKnown",
+                isPlaying: isMusicPlaying,
+              ),
             ),
           ),
         ),

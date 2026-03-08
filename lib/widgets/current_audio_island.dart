@@ -18,7 +18,7 @@ class CurrentAudioIsland extends StatelessWidget {
       overflow: TextOverflow.ellipsis,
       fontSize: fontSize,
       fontWeight: FontWeight.bold,
-      color: Colors.black,
+      color: Colors.white,
       decoration: TextDecoration.none,
     );
   }
@@ -44,8 +44,7 @@ class CurrentAudioIsland extends StatelessWidget {
       children: [
         Spacer(),
         LiquidGlassLayer(
-            settings:
-                LiquidGlassSettings(glassColor: Colors.cyan, thickness: 30),
+            settings: LiquidGlassSettings(thickness: 30),
             child: LiquidGlass(
                 shape: LiquidRoundedRectangle(borderRadius: 30),
                 child: Container(
@@ -56,17 +55,18 @@ class CurrentAudioIsland extends StatelessWidget {
                   ),
                   child: Row(
                     spacing: 10,
-                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      CircleAvatar(
-                        child: IconButton(
-                          onPressed: playPauseAudio,
-                          icon: Icon(
-                            isPlaying
-                                ? Icons.pause_circle_outlined
-                                : Icons.play_arrow_outlined,
-                          ),
+                      IconButton(
+                        onPressed: playPauseAudio,
+                        icon: Icon(
+                          isPlaying
+                              ? Icons.pause_circle_outlined
+                              : Icons.play_arrow_rounded,
+                          color: Colors.white,
+                          size: 40,
+                          weight: 20,
                         ),
                       ),
                       SizedBox(
@@ -76,8 +76,8 @@ class CurrentAudioIsland extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(title, style: islandTextStyle(14)),
-                            Text(artist, style: islandTextStyle(12)),
+                            Text(title, style: islandTextStyle(16)),
+                            Text(artist, style: islandTextStyle(14)),
                           ],
                         ),
                       ),

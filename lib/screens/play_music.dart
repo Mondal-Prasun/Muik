@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 import 'package:muik/channels/android_channel.dart';
 
 import 'package:muik/provider/content_provider.dart';
@@ -34,7 +35,15 @@ class _PlayMusicState extends ConsumerState<PlayMusic> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text("All Music"), centerTitle: true),
+      backgroundColor: Theme.of(context).colorScheme.primary,
+      appBar: AppBar(
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          foregroundColor: Colors.white,
+          title: Text(
+            "All Music",
+            style: TextStyle(color: Colors.white70),
+          ),
+          centerTitle: true),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -52,14 +61,16 @@ class _PlayMusicState extends ConsumerState<PlayMusic> {
                     child: Center(
                         child: Text(
                       currentMusic.name,
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Colors.white70),
                       softWrap: true,
                       overflow: TextOverflow.ellipsis,
                     ))),
                 Text(
                   currentMusic.artist ?? "UnKnown",
-                  style: TextStyle(fontSize: 11),
+                  style: TextStyle(fontSize: 11, color: Colors.white70),
                 ),
               ],
             ),
@@ -68,11 +79,31 @@ class _PlayMusicState extends ConsumerState<PlayMusic> {
             Spacer(),
             PlayPauseWidget(size: size, playMusicContext: context),
             Spacer(),
-            ElevatedButton(
-                onPressed: () {
-                  modalSheet(context);
-                },
-                child: Text("Up Next")),
+            LiquidGlassLayer(
+              child: LiquidGlass(
+                shape: LiquidRoundedRectangle(borderRadius: 15),
+                child: SizedBox(
+                  height: 40,
+                  width: 100,
+                  child: TextButton(
+                    onPressed: () {
+                      modalSheet(context);
+                    },
+                    child: Text(
+                      "Up Next",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(
+              height: 20,
+            )
           ],
         ),
       ),

@@ -106,6 +106,9 @@ class _MusicDuarationIndicator extends ConsumerState<MusicDurationIndicator> {
         ),
         SliderTheme(
             data: SliderThemeData(
+              trackHeight: 1.5,
+              activeTrackColor: Colors.white,
+              inactiveTrackColor: Colors.grey,
               thumbShape: SliderComponentShape.noThumb,
             ),
             child: Slider(
@@ -120,9 +123,17 @@ class _MusicDuarationIndicator extends ConsumerState<MusicDurationIndicator> {
           width: width,
           child: Row(
             children: [
-              Text("$updateDuMin:$updateDuSec"),
+              Text(
+                "$updateDuMin:$updateDuSec",
+                style: TextStyle(
+                    color: Colors.white70, fontWeight: FontWeight.bold),
+              ),
               Spacer(),
-              Text("$duInMinute:$duInSeconds"),
+              Text(
+                "$duInMinute:$duInSeconds",
+                style: TextStyle(
+                    color: Colors.white70, fontWeight: FontWeight.bold),
+              ),
             ],
           ),
         ),
@@ -187,7 +198,7 @@ class _IndicatorState extends State<_IndicatorLines>
       width: widget.width,
       margin: EdgeInsets.symmetric(vertical: 10, horizontal: 1),
       decoration: BoxDecoration(
-        color: widget.color,
+        color: Colors.grey,
         borderRadius: BorderRadius.circular(5),
         border: BoxBorder.all(width: 0.5),
       ),

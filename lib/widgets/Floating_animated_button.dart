@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 import 'package:muik/channels/android_channel.dart';
 import 'package:muik/provider/content_provider.dart';
 import 'package:muik/screens/play_music.dart';
+import 'package:rive_animated_icon/rive_animated_icon.dart';
 
 class FloatingAnimatedButton extends ConsumerStatefulWidget {
   const FloatingAnimatedButton({super.key});
@@ -14,7 +16,18 @@ class FloatingAnimatedButton extends ConsumerStatefulWidget {
 
 class _FloatingAnimatedButtonState extends ConsumerState<FloatingAnimatedButton>
     with TickerProviderStateMixin {
-  Widget toggleIcon = Icon(Icons.bubble_chart);
+  Widget toggleIcon = SizedBox(
+      height: 40,
+      width: 35,
+      child: RiveAnimatedIcon(
+        riveIcon: RiveIcon.menuDots,
+        strokeWidth: 6,
+        loopAnimation: true,
+        height: 30,
+        width: 30,
+        enableAbsorbPointer: true,
+        color: Colors.white70,
+      ));
   bool isTapped = false;
   double minPos = 70;
 
@@ -29,9 +42,19 @@ class _FloatingAnimatedButtonState extends ConsumerState<FloatingAnimatedButton>
       required double? bottom}) {
     return Positioned(
       bottom: bottom,
-      child: FloatingActionButton(
-        onPressed: onpressed,
-        child: child,
+      child: LiquidGlassLayer(
+        settings:
+            LiquidGlassSettings(thickness: 30, blur: 50, lightIntensity: 1),
+        child: LiquidGlass(
+          // glassContainsChild: true,
+          shape: LiquidRoundedRectangle(
+            borderRadius: 15,
+          ),
+          child: TextButton(
+            onPressed: onpressed,
+            child: child,
+          ),
+        ),
       ),
     );
   }
@@ -42,10 +65,8 @@ class _FloatingAnimatedButtonState extends ConsumerState<FloatingAnimatedButton>
 
     if (isTapped) {
       controller.forward();
-      toggleIcon = Icon(Icons.air_outlined);
     } else {
       controller.reverse();
-      toggleIcon = Icon(Icons.bubble_chart);
     }
     // });
   }
@@ -103,7 +124,15 @@ class _FloatingAnimatedButtonState extends ConsumerState<FloatingAnimatedButton>
                       Navigator.of(context)
                           .push(MaterialPageRoute(builder: (_) => PlayMusic()));
                     },
-                    child: Icon(Icons.shuffle),
+                    child: SizedBox(
+                      height: 40,
+                      width: 35,
+                      child: Icon(
+                        Icons.shuffle_rounded,
+                        size: 25,
+                        color: Colors.white70,
+                      ),
+                    ),
                     bottom: minPos * 2 * animation.value),
                 customFloatingButton(
                   onpressed: () {
@@ -111,7 +140,14 @@ class _FloatingAnimatedButtonState extends ConsumerState<FloatingAnimatedButton>
                     Navigator.of(context)
                         .push(MaterialPageRoute(builder: (_) => PlayMusic()));
                   },
-                  child: Icon(Icons.list),
+                  child: SizedBox(
+                      height: 40,
+                      width: 35,
+                      child: Icon(
+                        Icons.list_rounded,
+                        size: 25,
+                        color: Colors.white70,
+                      )),
                   bottom: !isTapped ? null : minPos * animation.value,
                 ),
                 customFloatingButton(

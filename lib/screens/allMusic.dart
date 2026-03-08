@@ -9,6 +9,8 @@ import 'package:muik/provider/content_provider.dart';
 import 'package:muik/screens/play_music.dart';
 import 'package:muik/widgets/Floating_animated_button.dart';
 import 'package:muik/widgets/custom_search.dart';
+import 'package:rive_animated_icon/rive_animated_icon.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 enum PopButton {
   next,
@@ -23,7 +25,8 @@ class HomeScreen extends ConsumerStatefulWidget {
   }
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen>
+    with TickerProviderStateMixin {
   MusicInfo musicInfo = MusicInfo(name: "", uri: "");
 
   List<MusicInfo> allMusic = [];
@@ -44,6 +47,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool loadingMusic = false;
 
   int _bottomNavCurrentIndex = 0;
+
+  late AnimationController _bgColorAnimController;
+  late Animation<double> _bgColorAnim;
+
+  bool _isSearchAvaliable = false;
 
   String cleanFileName(String input) {
     final regex = RegExp(
@@ -90,92 +98,147 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget musicListUi(int? sIndex) {
-    return ListView.builder(
-      controller: scrollController,
-      itemCount: _bottomNavCurrentIndex == 0
-          ? allMusic.length + 1
-          : allFavoriteMusic.length + 1,
-      itemBuilder: (context, index) {
-        if (_bottomNavCurrentIndex == 0) {
-          if (index + 1 == allMusic.length + 1) {
-            return SizedBox(
-              height: 300,
-            );
+    return Container(
+      color: Theme.of(context).colorScheme.primary,
+      child: ListView.builder(
+        controller: scrollController,
+        itemCount: _bottomNavCurrentIndex == 0
+            ? allMusic.length + 1
+            : allFavoriteMusic.length + 1,
+        itemBuilder: (context, index) {
+          if (_bottomNavCurrentIndex == 0) {
+            if (index + 1 == allMusic.length + 1) {
+              return SizedBox(
+                height: 300,
+              );
+            }
+          } else {
+            if (index + 1 == allFavoriteMusic.length + 1) {
+              return SizedBox(
+                height: 300,
+              );
+            }
           }
-        } else {
-          if (index + 1 == allFavoriteMusic.length + 1) {
-            return SizedBox(
-              height: 300,
-            );
-          }
-        }
-        return SizedBox(
-            height: listTileHeight,
-            child: ListTile(
-              tileColor: sIndex == null
-                  ? null
-                  : index == sIndex
-                      ? Colors.orangeAccent
-                      : Colors.white,
-              leading: Text("$index|"),
-              title: _bottomNavCurrentIndex == 0
-                  ? Text(allMusic[index].name)
-                  : Text(allFavoriteMusic[index].name),
-              onTap: () {
-                playMusic(
-                  context,
-                  _bottomNavCurrentIndex == 0
-                      ? allMusic[index]
-                      : allFavoriteMusic[index],
-                );
 
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => PlayMusic()),
-                );
-              },
-              trailing: PopupMenuButton<PopButton>(
-                itemBuilder: (_) {
-                  if (_bottomNavCurrentIndex == 0) {
-                    return <PopupMenuItem<PopButton>>[
-                      PopupMenuItem(
-                        onTap: () async {
-                          onAddNext(allMusic[index]);
-                        },
-                        value: PopButton.next,
-                        child: Text(PopButton.next.name),
-                      ),
-                      PopupMenuItem(
-                        onTap: () async {
-                          loadDb.insertFavoriteMusicInfo(allMusic[index]);
-                        },
-                        value: PopButton.favorite,
-                        child: Text(PopButton.favorite.name),
-                      )
-                    ];
-                  } else {
-                    return <PopupMenuItem<PopButton>>[
-                      PopupMenuItem(
-                        onTap: () async {
-                          onAddNext(allFavoriteMusic[index]);
-                        },
-                        value: PopButton.next,
-                        child: Text(PopButton.next.name),
-                      ),
-                      PopupMenuItem(
-                        onTap: () async {
-                          await loadDb
-                              .deleteFromFavorite(allFavoriteMusic[index]);
-                          setState(() {});
-                        },
-                        child: Text("delete"),
-                      )
-                    ];
-                  }
+          return SizedBox(
+              height: listTileHeight,
+              child: ListTile(
+                textColor: Colors.white,
+                tileColor: sIndex == null
+                    ? null
+                    : index == sIndex
+                        ? Colors.orangeAccent
+                        : Colors.white,
+                leading: RiveAnimatedIcon(
+                  riveIcon: RiveIcon.sound,
+                  strokeWidth: 6,
+                  height: 20,
+                  width: 20,
+                  loopAnimation: true,
+                  enableAbsorbPointer: true,
+                  color: Colors.white,
+                ),
+                title: _bottomNavCurrentIndex == 0
+                    ? Text(allMusic[index].name)
+                    : Text(allFavoriteMusic[index].name),
+                onTap: () {
+                  playMusic(
+                    context,
+                    _bottomNavCurrentIndex == 0
+                        ? allMusic[index]
+                        : allFavoriteMusic[index],
+                  );
+
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => PlayMusic()),
+                  );
                 },
-              ),
-            ));
-      },
+                trailing: PopupMenuButton<PopButton>(
+                  itemBuilder: (_) {
+                    if (_bottomNavCurrentIndex == 0) {
+                      return <PopupMenuItem<PopButton>>[
+                        PopupMenuItem(
+                          onTap: () async {
+                            onAddNext(allMusic[index]);
+                          },
+                          value: PopButton.next,
+                          child: Row(spacing: 10, children: [
+                            RiveAnimatedIcon(
+                              riveIcon: RiveIcon.add,
+                              loopAnimation: true,
+                              strokeWidth: 6,
+                              enableAbsorbPointer: true,
+                            ),
+                            Text(PopButton.next.name)
+                          ]),
+                        ),
+                        PopupMenuItem(
+                          onTap: () async {
+                            loadDb.insertFavoriteMusicInfo(allMusic[index]);
+                          },
+                          value: PopButton.favorite,
+                          child: Row(spacing: 10, children: [
+                            RiveAnimatedIcon(
+                              riveIcon: RiveIcon.star,
+                              strokeWidth: 6,
+                              loopAnimation: true,
+                              enableAbsorbPointer: true,
+                            ),
+                            Text(PopButton.favorite.name)
+                          ]),
+                        )
+                      ];
+                    } else {
+                      return <PopupMenuItem<PopButton>>[
+                        PopupMenuItem(
+                          onTap: () async {
+                            onAddNext(allFavoriteMusic[index]);
+                          },
+                          value: PopButton.next,
+                          child: Row(spacing: 10, children: [
+                            RiveAnimatedIcon(
+                              riveIcon: RiveIcon.add,
+                              strokeWidth: 6,
+                              loopAnimation: true,
+                              enableAbsorbPointer: true,
+                            ),
+                            Text(PopButton.next.name)
+                          ]),
+                        ),
+                        PopupMenuItem(
+                          onTap: () async {
+                            await loadDb
+                                .deleteFromFavorite(allFavoriteMusic[index]);
+                            setState(() {});
+                          },
+                          child: Row(spacing: 10, children: [
+                            RiveAnimatedIcon(
+                              riveIcon: RiveIcon.dislike,
+                              strokeWidth: 6,
+                              loopAnimation: true,
+                              enableAbsorbPointer: true,
+                            ),
+                            Text("delete")
+                          ]),
+                        )
+                      ];
+                    }
+                  },
+                ),
+              ));
+        },
+      ),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    _bgColorAnimController = AnimationController(
+        vsync: this, duration: Duration(milliseconds: 1500));
+
+    _bgColorAnim = Tween(begin: 0.0, end: 1.0).animate(_bgColorAnimController);
   }
 
   @override
@@ -192,13 +255,38 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         curve: Curves.bounceInOut,
       );
     }
+
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.primary,
       appBar: AppBar(
-        title: CustomSearchBar(),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        title:
+            Visibility(visible: _isSearchAvaliable, child: CustomSearchBar()),
+        actions: [
+          RiveAnimatedIcon(
+            color: Colors.white,
+            riveIcon: RiveIcon.search,
+            loopAnimation: true,
+            height: 35,
+            width: 35,
+            strokeWidth: 6,
+            onTap: () {
+              setState(() {
+                _isSearchAvaliable = !_isSearchAvaliable;
+              });
+            },
+          ),
+          SizedBox(
+            width: 30,
+          )
+        ],
       ),
       floatingActionButton:
           _bottomNavCurrentIndex == 0 ? FloatingAnimatedButton() : null,
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.grey,
         currentIndex: _bottomNavCurrentIndex,
         onTap: (index) {
           setState(() {
@@ -207,12 +295,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         },
         items: [
           BottomNavigationBarItem(
-              icon: Icon(
-                Icons.list_outlined,
+              icon: RiveAnimatedIcon(
+                color: Colors.white,
+                riveIcon: RiveIcon.home2,
+                strokeWidth: 6,
+                height: 30,
+                width: 30,
+                loopAnimation: true,
+                enableAbsorbPointer: true,
               ),
               label: "Home"),
           BottomNavigationBarItem(
-              icon: Icon(Icons.favorite_outlined), label: "Favorite"),
+              icon: RiveAnimatedIcon(
+                color: Colors.white,
+                riveIcon: RiveIcon.star,
+                strokeWidth: 6,
+                loopAnimation: true,
+                height: 30,
+                width: 30,
+                enableAbsorbPointer: true,
+              ),
+              label: "Favorite"),
         ],
       ),
       body: _bottomNavCurrentIndex == 0
@@ -221,8 +324,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   future: loadDb.getLimitedMusic(musicLimit, musicLimitOffset),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(
-                        child: LinearProgressIndicator(color: Colors.green),
+                      return Skeletonizer(
+                        enabled: true,
+                        child: ListView(
+                          children: [
+                            ...List.generate(12, (index) {
+                              return ListTile(
+                                title: Text("Music name"),
+                              );
+                            })
+                          ],
+                        ),
                       );
                     }
 
@@ -230,7 +342,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       return Center(
                         child: Text(
                           "Cannot load music ${snapshot.error}",
-                          style: TextStyle(color: Colors.red),
+                          style: TextStyle(color: Colors.white),
                         ),
                       );
                     } else if (snapshot.hasData) {
@@ -247,7 +359,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     return Center(
                       child: Text(
                         "Cannot load music",
-                        style: TextStyle(color: Colors.red),
+                        style: TextStyle(color: Colors.white),
                       ),
                     );
                   },
@@ -257,8 +369,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               future: loadDb.getAllFavoriteMusic(),
               builder: (_, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(
-                    child: LinearProgressIndicator(color: Colors.green),
+                  return Skeletonizer(
+                    enabled: true,
+                    child: ListView(
+                      children: [
+                        ...List.generate(12, (i) {
+                          return ListTile(
+                            title: Text("Some Music"),
+                          );
+                        })
+                      ],
+                    ),
                   );
                 }
 
@@ -266,7 +387,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   return Center(
                     child: Text(
                       "Cannot load Favorite music ${snapshot.error}",
-                      style: TextStyle(color: Colors.red),
+                      style: TextStyle(color: Colors.yellow),
                     ),
                   );
                 } else if (snapshot.hasData) {
@@ -276,7 +397,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     return Center(
                       child: Text(
                         "Try adding some favorite music",
-                        style: TextStyle(color: Colors.red),
+                        style: TextStyle(color: Colors.yellow),
                       ),
                     );
                   }
@@ -289,7 +410,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 return Center(
                   child: Text(
                     "Try adding some favorite music",
-                    style: TextStyle(color: Colors.red),
+                    style: TextStyle(color: Colors.yellow),
                   ),
                 );
               },
