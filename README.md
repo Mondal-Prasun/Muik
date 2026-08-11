@@ -1,4 +1,3 @@
-
 # 🎵 Muik - Music App
 
 ![License](https://img.shields.io/github/license/Mondal-Prasun/Muik?color=blue)
@@ -16,11 +15,7 @@
 
 | App Interface | Playback Demo | Feature Demo |
 | :---: | :---: | :---: |
-| <img src="https://github.com/user-attachments/assets/79c7ef99-96b1-4254-a853-5cc4a19b6b47" width="250" alt="Muik Interface"/> | <video src="https://github.com/user-attachments/assets/5e1ccd61-f1cf-490f-8bf6-51859dabbd52" width="250" alt="Screen Recording 1"/> | <video
-
-https://github.com/user-attachments/assets/5f8ffe8d-5a24-4f22-a776-3dba00da4985
-
- src="docs/recordings/demo_2.gif" width="250" alt="Screen Recording 2"/> |
+| <img src="https://github.com/user-attachments/assets/79c7ef99-96b1-4254-a853-5cc4a19b6b47" width="250" alt="Muik Interface"/> | <video src="https://github.com/user-attachments/assets/5e1ccd61-f1cf-490f-8bf6-51859dabbd52" width="250" alt="Screen Recording 1"/> | <video src="https://github.com/user-attachments/assets/5f8ffe8d-5a24-4f22-a776-3dba00da4985" width="250" alt="Screen Recording 2"/> |
 | **Main Interface** | **Player & Controls** | **Playlist & Library** |
 
 ---
@@ -69,5 +64,6 @@ Muik combines the best of cross-platform UI development with native Android audi
 
 1. **Clone the Repository**
    ```bash
-   git clone [https://github.com/Mondal-Prasun/Muik.git](https://github.com/Mondal-Prasun/Muik.git)
+   git clone https://github.com/Mondal-Prasun/Muik.git
    cd Muik
+   ```
